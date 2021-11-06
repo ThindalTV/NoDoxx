@@ -1,0 +1,28 @@
+{
+  "objectArray": [
+    {
+      "name": "object 1",
+      "a": {
+        "aKey":  12
+      }
+    },
+    {
+      "name": "object 2"
+    }
+  ],
+  "exclude": [
+    "**/bin",
+    "**/bower_components",
+    "**/jspm_packages",
+    "**/node_modules",
+    "**/obj",
+    "**/platforms"
+  ],
+  "stringKey": "String",
+  "intKey": 2,
+  "trueKey": true,
+  "falseKey": false,
+  "objectKey": {
+    "subString": "sub"
+  }
+}
