@@ -1,36 +1,16 @@
 ﻿using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
-using Microsoft.VisualStudio.Text.Formatting;
 using System;
 using System.Windows.Controls;
 using System.Windows.Media;
 
 namespace NoDoxx.Adorners
 {
-    /// <summary>
-    /// ConfigurationHider places red boxes behind all the "a"s in the editor window
-    /// </summary>
-
     internal sealed class ConfigurationHiderAdorner
     {
-        /// <summary>
-        /// The layer of the adornment.
-        /// </summary>
         private readonly IAdornmentLayer _layer;
-
-        /// <summary>
-        /// Text view where the adornment is created.
-        /// </summary>
         private readonly IWpfTextView _view;
-
-        /// <summary>
-        /// Adornment brush.
-        /// </summary>
         private readonly Brush _brush;
-
-        /// <summary>
-        /// Adornment pen.
-        /// </summary>
         private readonly Pen _pen;
 
         /// <summary>
