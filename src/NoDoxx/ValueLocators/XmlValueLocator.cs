@@ -9,7 +9,7 @@ namespace NoDoxx.ValueLocators
     {
         public IEnumerable<ConfigPosition> FindConfigValues(string fileContent)
         {
-            return(HideXml(fileContent));
+            return (HideXml(fileContent));
         }
 
         private IEnumerable<ConfigPosition> HideXml(string fullContents, string contents = null, int contentsStartIndex = 0)
@@ -20,31 +20,43 @@ namespace NoDoxx.ValueLocators
 
             if (String.IsNullOrWhiteSpace(contents)) return ret;
 
-            var xmlDocument = new XmlDocument();
-            xmlDocument.LoadXml(contents);
-
-            if (xmlDocument[xmlDocument.DocumentElement.Name].Attributes != null &&
-                xmlDocument[xmlDocument.DocumentElement.Name].Attributes.Count > 0)
+            try
             {
-                foreach (XmlNode attr in xmlDocument[xmlDocument.DocumentElement.Name].Attributes)
+                var xmlDocument = new XmlDocument();
+                xmlDocument.LoadXml(contents);
+
+                if (xmlDocument[xmlDocument.DocumentElement.Name].Attributes != null &&
+                    xmlDocument[xmlDocument.DocumentElement.Name].Attributes.Count > 0)
                 {
-                    var tagStartIndex = -1;
-                    while ((tagStartIndex = fullContents.IndexOf(attr.OuterXml, tagStartIndex+1)) != -1)
+                    foreach (XmlNode attr in xmlDocument[xmlDocument.DocumentElement.Name].Attributes)
                     {
-                        var valueStartIndex = fullContents.IndexOf(attr.InnerText, tagStartIndex);
-                        var valueStopIndex = valueStartIndex + attr.InnerText.Length;
-                        ret.Add(new ConfigPosition(valueStartIndex, valueStopIndex));
+                        var tagStartIndex = -1;
+                        while ((tagStartIndex = fullContents.IndexOf(attr.OuterXml, tagStartIndex + 1)) != -1)
+                        {
+                            var valueStartIndex = fullContents.IndexOf(attr.InnerText, tagStartIndex);
+                            var valueStopIndex = valueStartIndex + attr.InnerText.Length;
+                            ret.Add(new ConfigPosition(valueStartIndex, valueStopIndex));
+                        }
+                    }
+                }
+
+                foreach (var tag in xmlDocument)
+                {
+                    var xTag = tag as XmlElement; // Or if child element is content(pure text), hide it right away
+                    if (xTag != null)
+                    {
+                        foreach (XmlNode c in xTag.ChildNodes)
+                        {
+                            ret.AddRange(HideXml(fullContents, c.InnerXml, 0));
+                        }
                     }
                 }
             }
-
-            foreach (var tag in xmlDocument.ChildNodes)
+            catch
             {
-                var xTag = tag as System.Xml.XmlElement; // Or if child element is content(pure text), hide it right away
-                if (xTag != null)
-                {
-                    ret.AddRange(HideXml(fullContents, xTag.InnerXml, 0));
-                }
+                // Not valid xml, probably means it's bare text
+                var startIndex = fullContents.IndexOf(contents);
+                ret.Add(new ConfigPosition(startIndex, startIndex + contents.Length));
             }
             return ret;
         }
