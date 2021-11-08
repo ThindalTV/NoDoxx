@@ -4,10 +4,6 @@ using System.ComponentModel.Composition;
 
 namespace NoDoxx.Adorners
 {
-    /// <summary>
-    /// Establishes an <see cref="IAdornmentLayer"/> to place the adornment on and exports the <see cref="IWpfTextViewCreationListener"/>
-    /// that instantiates the adornment on the event of a <see cref="IWpfTextView"/>'s creation
-    /// </summary>
     [Export(typeof(IWpfTextViewCreationListener))]
     [ContentType("XML")]
     [ContentType("JSON")]
@@ -16,11 +12,6 @@ namespace NoDoxx.Adorners
     {
         // Disable "Field is never assigned to..." and "Field is never used" compiler's warnings. Justification: the field is used by MEF.
 #pragma warning disable 649, 169
-
-        /// <summary>
-        /// Defines the adornment layer for the adornment. This layer is ordered
-        /// after the selection layer in the Z-order
-        /// </summary>
         [Export(typeof(AdornmentLayerDefinition))]
         [Name("ConfigurationHiderAdorner")]
         [Order(After = PredefinedAdornmentLayers.Text)]
