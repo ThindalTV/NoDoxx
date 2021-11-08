@@ -50,5 +50,8 @@
     <None Include="App.config" />
     <None Include="config.json" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Random.xml" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
