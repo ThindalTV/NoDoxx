@@ -17,10 +17,6 @@ namespace NoDoxx.Adorners
         private readonly Brush _brush;
         private readonly Pen _pen;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ConfigurationHiderAdorner"/> class.
-        /// </summary>
-        /// <param name="view">Text view to create the adornment for</param>
         public ConfigurationHiderAdorner(IWpfTextView view)
         {
             if (view == null)
@@ -45,15 +41,6 @@ namespace NoDoxx.Adorners
             _view.LayoutChanged += OnLayoutChanged;
         }
 
-        /// <summary>
-        /// Handles whenever the text displayed in the view changes by adding the adornment to any reformatted lines
-        /// </summary>
-        /// <remarks><para>This event is raised whenever the rendered text displayed in the <see cref="ITextView"/> changes.</para>
-        /// <para>It is raised whenever the view does a layout (which happens when DisplayTextLineContainingBufferPosition is called or in response to text or classification changes).</para>
-        /// <para>It is also raised whenever the view scrolls horizontally or when its size changes.</para>
-        /// </remarks>
-        /// <param name="sender">The event sender.</param>
-        /// <param name="e">The event arguments.</param>
         internal void OnLayoutChanged(object sender, TextViewLayoutChangedEventArgs e)
         {
             var type = _view.TextSnapshot.ContentType.TypeName;
@@ -87,7 +74,6 @@ namespace NoDoxx.Adorners
         private void HideData(int startOffset, int stopOffset)
         {
             IWpfTextViewLineCollection textViewLines = _view.TextViewLines;
-            // Loop through each character, and place a box around any 'a'
             SnapshotSpan span = new SnapshotSpan(_view.TextSnapshot, Span.FromBounds(startOffset, stopOffset));
             Geometry geometry = textViewLines.GetMarkerGeometry(span);
             if (geometry != null)
