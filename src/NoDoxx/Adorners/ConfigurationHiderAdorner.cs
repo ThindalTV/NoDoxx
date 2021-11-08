@@ -62,57 +62,17 @@ namespace NoDoxx.Adorners
             if (type == "JSON")
             {
                 locator = new JsonValueLocator();
-
-                //HideJson(contents);
-
             }
             else if (type == "XML")
             {
                 locator = new XmlValueLocator();
-                //var contents = _view.TextSnapshot.GetText();
-               // HideXml(contents);
             }
 
             if (locator == null) return;
 
             var contents = _view.TextSnapshot.GetText();
             HideByIndexes(locator.FindConfigValues(contents));
-
-            /*foreach (ITextViewLine line in e.NewOrReformattedLines)
-            {
-                CreateVisuals(line);
-            }*/
         }
-
-        #region XML parsing
-        private void HideXml(string fullContents, string contents = null, int contentsStartIndex = 0)
-        {
-            if (contents == null) contents = fullContents;
-
-            if (String.IsNullOrWhiteSpace(contents)) return;
-
-            var xmlDocument = new System.Xml.XmlDocument();
-            xmlDocument.LoadXml(contents);
-
-            if (xmlDocument[xmlDocument.DocumentElement.Name].Attributes != null &&
-                xmlDocument[xmlDocument.DocumentElement.Name].Attributes.Count > 0)
-            {
-                foreach (var attr in xmlDocument[xmlDocument.DocumentElement.Name].Attributes)
-                {
-                    ;
-                }
-            }
-
-            foreach (var tag in xmlDocument.ChildNodes)
-            {
-                var xTag = tag as System.Xml.XmlElement; // Or if child element is content(pure text), hide it right away
-                if (xTag != null)
-                {
-                    HideXml(fullContents, xTag.InnerXml, 0);
-                }
-            }
-        }
-        #endregion
 
         internal void HideByIndexes(IEnumerable<ConfigPosition> positions)
         {
@@ -123,62 +83,6 @@ namespace NoDoxx.Adorners
                 HideData(p.StartIndex, p.EndIndex);
             }
         }
-
-        #region JSON parsing
-        private void HideJson(string fullJson, string json = null, int jsonStartIndex = 0)
-        {
-            if (json == null) json = fullJson;
-
-            System.Text.Json.JsonDocument jsonObject;
-            try
-            {
-                jsonObject = System.Text.Json.JsonDocument.Parse(json);
-            }
-            catch (Exception)
-            {
-                var start = fullJson.IndexOf(json);
-                var end = start + json.Length;
-                HideData(start, end);
-                return;
-            }
-
-            var obj = jsonObject.RootElement.EnumerateObject();
-            foreach (var o in obj)
-            {
-                if (o.Value.ValueKind == System.Text.Json.JsonValueKind.Object)
-                {
-                    var objString = o.Value.ToString();
-                    HideJson(fullJson, objString, fullJson.IndexOf(objString));
-                    continue;
-                }
-
-                if (o.Value.ValueKind == System.Text.Json.JsonValueKind.Array)
-                {
-                    var objString = o.Value.ToString();
-                    foreach (var arrayItem in o.Value.EnumerateArray())
-                    {
-                        HideJson(fullJson, arrayItem.ToString(), fullJson.IndexOf(objString));
-                    }
-                    continue;
-                }
-
-                // Get value part of property
-                int index = jsonStartIndex;
-                var propertyText = o.ToString();
-                while ((index = fullJson.IndexOf(propertyText, index + 1)) > 0)
-                {
-                    var caseInsensitive = o.Value.ValueKind == System.Text.Json.JsonValueKind.True || o.Value.ValueKind == System.Text.Json.JsonValueKind.False;
-                    var valuePartIndex = fullJson.IndexOf(o.Value.ToString(), index + 2, caseInsensitive ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal);
-                    var endIndex = index + propertyText.Length;
-
-                    // For strings it doesn't catch the trailing " because it only works with the value.
-                    int stringPad = o.Value.ValueKind == System.Text.Json.JsonValueKind.String ? -1 : 0;
-
-                    HideData(valuePartIndex, endIndex + stringPad);
-                }
-            }
-        }
-        #endregion
 
         private void HideData(int startOffset, int stopOffset)
         {
