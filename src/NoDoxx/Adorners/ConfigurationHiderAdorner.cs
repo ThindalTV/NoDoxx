@@ -1,6 +1,10 @@
 ﻿using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
+using NoDoxx.Interfaces;
+using NoDoxx.ValueLocators;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Windows.Controls;
 using System.Windows.Media;
 
@@ -53,18 +57,26 @@ namespace NoDoxx.Adorners
         internal void OnLayoutChanged(object sender, TextViewLayoutChangedEventArgs e)
         {
             var type = _view.TextSnapshot.ContentType.TypeName;
+            IValueLocator locator = null;
 
             if (type == "JSON")
             {
-                var contents = _view.TextSnapshot.GetText();
-                HideJson(contents);
+                locator = new JsonValueLocator();
+
+                //HideJson(contents);
 
             }
             else if (type == "XML")
             {
-                var contents = _view.TextSnapshot.GetText();
-                HideXml(contents);
+                locator = new XmlValueLocator();
+                //var contents = _view.TextSnapshot.GetText();
+               // HideXml(contents);
             }
+
+            if (locator == null) return;
+
+            var contents = _view.TextSnapshot.GetText();
+            HideByIndexes(locator.FindConfigValues(contents));
 
             /*foreach (ITextViewLine line in e.NewOrReformattedLines)
             {
@@ -101,6 +113,16 @@ namespace NoDoxx.Adorners
             }
         }
         #endregion
+
+        internal void HideByIndexes(IEnumerable<ConfigPosition> positions)
+        {
+            var pos = positions.GroupBy(p => p.StartIndex).Select(p => p.First()).ToList();
+
+            foreach( var p in pos)
+            {
+                HideData(p.StartIndex, p.EndIndex);
+            }
+        }
 
         #region JSON parsing
         private void HideJson(string fullJson, string json = null, int jsonStartIndex = 0)

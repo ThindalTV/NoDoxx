@@ -47,12 +47,15 @@
   <ItemGroup>
     <Compile Include="Adorners\ConfigurationHiderAdorner.cs" />
     <Compile Include="Adorners\ConfigurationHiderTextViewCreationListener.cs" />
+    <Compile Include="Interfaces\IValueLocator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="source.extension.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>source.extension.vsixmanifest</DependentUpon>
     </Compile>
+    <Compile Include="ValueLocators\XmlValueLocator.cs" />
+    <Compile Include="ValueLocators\JsonValueLocator.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="source.extension.vsixmanifest">
