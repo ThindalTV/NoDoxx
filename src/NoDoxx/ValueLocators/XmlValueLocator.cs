@@ -18,6 +18,20 @@ namespace NoDoxx.ValueLocators
 
             if (contents == null) contents = fullContents;
 
+            if( !contents.StartsWith("<"))
+            {
+                var valueStopIndex = contents.IndexOf("<");
+                var bareWords = contents.Substring(0, valueStopIndex != -1 ? valueStopIndex : contents.Length);
+                var valueStartIndex = fullContents.IndexOf($">{bareWords}<") + 1;
+                if( valueStopIndex == -1)
+                {
+                    ret.Add(new ConfigPosition(valueStartIndex, valueStartIndex + contents.Length));
+                    return ret;
+                }
+                ret.Add(new ConfigPosition(valueStartIndex, valueStopIndex + valueStartIndex));
+                contents = contents.Substring(valueStopIndex);
+            }
+
             if (String.IsNullOrWhiteSpace(contents)) return ret;
 
             try
@@ -47,12 +61,28 @@ namespace NoDoxx.ValueLocators
                     {
                         foreach (XmlNode c in xTag.ChildNodes)
                         {
+                            if( c.NodeType == XmlNodeType.Text)
+                            {
+                                var valueStartIndex = fullContents.IndexOf(">" + c.Value) + 1;
+                                var valueStopIndex = valueStartIndex + c.Value.Length;
+                                ret.Add(new ConfigPosition(valueStartIndex, valueStopIndex));
+                                continue;
+                            }
                             ret.AddRange(HideXml(fullContents, c.InnerXml, 0));
                         }
                     }
                 }
+            } catch(XmlException xex)
+            {
+                if( xex.Message.StartsWith("Data at the root level is invalid."))
+                {
+                    return ret;
+                } else
+                {
+                    throw;
+                }
             }
-            catch
+            catch(Exception ex)
             {
                 // Not valid xml, probably means it's bare text
                 var startIndex = fullContents.IndexOf(contents);
