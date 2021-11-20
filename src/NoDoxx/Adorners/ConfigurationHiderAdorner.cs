@@ -25,7 +25,6 @@ namespace NoDoxx.Adorners
             }
 
             _layer = view.GetAdornmentLayer("ConfigurationHiderAdorner");
-
             _view = view;
 
             // Create the pen and brush to color the box hiding the config values
@@ -64,11 +63,16 @@ namespace NoDoxx.Adorners
         internal void HideByIndexes(IEnumerable<ConfigPosition> positions)
         {
             var pos = positions.GroupBy(p => p.StartIndex).Select(p => p.First()).ToList();
-
+            Clear();
             foreach( var p in pos)
             {
                 HideData(p.StartIndex, p.EndIndex);
             }
+        }
+
+        private void Clear()
+        {
+            _layer.RemoveAllAdornments();
         }
 
         private void HideData(int startOffset, int stopOffset)
