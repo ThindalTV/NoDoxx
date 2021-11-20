@@ -4,6 +4,7 @@
       "name": "object 1",
       "a": {
         "aKey": 12,
+        "ok": "So this should still be working",
         "a":  ""
       }
     },
