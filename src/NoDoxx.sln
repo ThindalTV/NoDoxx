@@ -1,11 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.31729.503
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NoDoxx", "NoDoxx\NoDoxx.csproj", "{7DE49344-5BBA-463F-A3C3-84786058BC67}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FrameworkTestApp", "FrameworkTestApp\FrameworkTestApp.csproj", "{2F5BD0A9-7535-48DE-8BD4-129448EA5D71}"
+EndProject
+Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "CoreTestApp", "CoreTestApp\CoreTestApp.vbproj", "{42B40978-5972-43EC-9DCB-0927A4CF2124}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{2F5BD0A9-7535-48DE-8BD4-129448EA5D71}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2F5BD0A9-7535-48DE-8BD4-129448EA5D71}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2F5BD0A9-7535-48DE-8BD4-129448EA5D71}.Release|Any CPU.Build.0 = Release|Any CPU
+		{42B40978-5972-43EC-9DCB-0927A4CF2124}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{42B40978-5972-43EC-9DCB-0927A4CF2124}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{42B40978-5972-43EC-9DCB-0927A4CF2124}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{42B40978-5972-43EC-9DCB-0927A4CF2124}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -98,7 +98,7 @@ namespace NoDoxx.Commands
             var tw = documentView.TextView;
             var adornerLayer = tw.GetAdornmentLayer("ConfigurationHiderAdorner");
             DisplayConfigValues = !DisplayConfigValues;
-            adornerLayer.Opacity = DisplayConfigValues ? 1 : 0;
+            adornerLayer.Opacity = DisplayConfigValues ? 0 : 1;
         }
     }
 }
