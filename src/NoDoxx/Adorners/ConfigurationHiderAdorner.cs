@@ -111,7 +111,7 @@ namespace NoDoxx.Adorners
                 };
 
                 _layer.AddAdornment(AdornmentPositioningBehavior.TextRelative, span, null, image, null);
-                _layer.AddAdornment(AdornmentPositioningBehavior.OwnerControlled, null, null, hiddenFieldsLabel, null);
+                _layer.AddAdornment(AdornmentPositioningBehavior.ViewportRelative, null, null, hiddenFieldsLabel, null);
             }
         }
     }
