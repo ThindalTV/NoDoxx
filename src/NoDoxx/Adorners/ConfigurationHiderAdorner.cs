@@ -93,7 +93,19 @@ namespace NoDoxx.Adorners
                 Canvas.SetLeft(image, geometry.Bounds.Left);
                 Canvas.SetTop(image, geometry.Bounds.Top);
 
+                var hiddenFieldsLabel = new Label()
+                {
+                    Content = "Configuration values hidden",
+                    HorizontalAlignment = System.Windows.HorizontalAlignment.Right,
+                    VerticalAlignment = System.Windows.VerticalAlignment.Bottom,
+                    
+                    BorderBrush = new SolidColorBrush(Colors.Black),
+                    Background = new SolidColorBrush(Colors.LightGray),
+                    FontSize = 16
+                };
+
                 _layer.AddAdornment(AdornmentPositioningBehavior.TextRelative, span, null, image, null);
+                _layer.AddAdornment(AdornmentPositioningBehavior.OwnerControlled, null, null, hiddenFieldsLabel, null);
             }
         }
     }
