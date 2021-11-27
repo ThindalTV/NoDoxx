@@ -28,13 +28,9 @@ namespace NoDoxx.Adorners
             _view = view;
 
             // Create the pen and brush to color the box hiding the config values
-            _brush = new SolidColorBrush(Colors.Blue);
-            _brush.Freeze();
-
-
-            var penBrush = new SolidColorBrush(Colors.Blue);
-            penBrush.Freeze();
-            _pen = new Pen(penBrush, 0.5);
+            _brush = _view.Background;
+            var outlineBrush = new SolidColorBrush(Colors.LightBlue);
+            _pen = new Pen(outlineBrush, 0.5);
             _pen.Freeze();
 
             _view.LayoutChanged += OnLayoutChanged;
