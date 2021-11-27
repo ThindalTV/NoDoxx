@@ -53,7 +53,13 @@ namespace NoDoxx.Adorners
             if (locator == null) return;
 
             var contents = _view.TextSnapshot.GetText();
-            HideByIndexes(locator.FindConfigValues(contents));
+            try
+            {
+                HideByIndexes(locator.FindConfigValues(contents));
+            } catch
+            {
+                HideByIndexes(new[] { new ConfigPosition(0, contents.Length) });
+            }
         }
 
         internal void HideByIndexes(IEnumerable<ConfigPosition> positions)
