@@ -1,16 +1,17 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
-    <Metadata>
-        <Identity Id="NoDoxx.8238cd32-5f52-4ecc-9e2a-026e45f04c3e" Version="1.0" Language="en-US" Publisher="Thindal" />
-        <DisplayName>Don't Doxx Yourself</DisplayName>
-        <Description xml:space="preserve">It's easy to mess up when streaming or showing code. Lessen the risk by hiding your configuration values until you actually decide to show them.
+	<Metadata>
+		<Identity Id="NoDoxx.8238cd32-5f52-4ecc-9e2a-026e45f04c3e" Version="1.0" Language="en-US" Publisher="Thindal" />
+		<DisplayName>Don't Doxx Yourself</DisplayName>
+		<Description xml:space="preserve">It's easy to mess up when streaming, presenting or showing code. Lessen the risk by hiding your configuration values until you actually decide to show them.
 
 This extension adds blocks over all values in xml and json files. You can click a button to toggle the boxes so you can edit the values, but if you close &amp; reopen the file the </Description>
-        <MoreInfo>https://github.com/ThindalTV/NoDoxx</MoreInfo>
-        <License>LICENSE</License>
-        <Icon>Resources\Icon.png</Icon>
-        <PreviewImage>Resources\Icon.png</PreviewImage>
-    </Metadata>
+		<MoreInfo>https://github.com/ThindalTV/NoDoxx</MoreInfo>
+		<License>LICENSE</License>
+		<Icon>Resources\Icon.png</Icon>
+		<PreviewImage>Resources\Icon.png</PreviewImage>
+		<Tags>Configuration, Configuration Values, Doxx, No Doxx, Presenting, Streaming, Twitch, Youtube, Hide config</Tags>
+	</Metadata>
 	<Installation>
 		<InstallationTarget Id="Microsoft.VisualStudio.Community" Version="[15.0,17.0)">
 			<ProductArchitecture>x86</ProductArchitecture>
@@ -19,15 +20,15 @@ This extension adds blocks over all values in xml and json files. You can click 
 			<ProductArchitecture>amd64</ProductArchitecture>
 		</InstallationTarget>
 	</Installation>
-    <Prerequisites>
-        <Prerequisite Id="Microsoft.VisualStudio.Component.CoreEditor" Version="[16.0,)" DisplayName="Visual Studio core editor" />
-    </Prerequisites>
-    <Assets>
+	<Prerequisites>
+		<Prerequisite Id="Microsoft.VisualStudio.Component.CoreEditor" Version="[16.0,)" DisplayName="Visual Studio core editor" />
+	</Prerequisites>
+	<Assets>
 
-        <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%|" />
-        <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%;PkgdefProjectOutputGroup|" />
-    </Assets>
-    <Dependencies>
-        <Dependency Id="Microsoft.VisualStudio.MPF.16.0" DisplayName="Visual Studio MPF 16.0" d:Source="Installed" Version="[16.0,17.0)" />
-    </Dependencies>
+		<Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%|" />
+		<Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%;PkgdefProjectOutputGroup|" />
+	</Assets>
+	<Dependencies>
+		<Dependency Id="Microsoft.VisualStudio.MPF.16.0" DisplayName="Visual Studio MPF 16.0" d:Source="Installed" Version="[16.0,17.0)" />
+	</Dependencies>
 </PackageManifest>
