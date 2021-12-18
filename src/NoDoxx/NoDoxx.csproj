@@ -87,7 +87,7 @@
     <VSCTCompile Include="Commands\ToggleDisplayCommand\ToggleDisplayCommandPackage.vsct">
       <ResourceName>Menus.ctmenu</ResourceName>
     </VSCTCompile>
-    <Content Include="Commands\ToggleDisplayCommand\Resources\ToggleDisplayCommand.png" />
+    <Content Include="Commands\ToggleDisplayCommand\Resources\ToggleDisplayCommand16x16.png" />
     <Content Include="Commands\ToggleDisplayCommand\Resources\ToggleDisplayCommandPackage.ico" />
     <Content Include="LICENSE">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

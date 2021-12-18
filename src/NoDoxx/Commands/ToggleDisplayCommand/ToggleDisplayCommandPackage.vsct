@@ -36,8 +36,8 @@
 				type="Toolbar" >
 				<CommandFlag>DefaultDocked</CommandFlag>
 				<Strings>
-					<ButtonText>Toggle config value visibility</ButtonText>
-					<CommandName>Toggle config value visibility</CommandName>
+					<ButtonText>NoDoxx: Toggle config value visibility</ButtonText>
+					<CommandName>NoDoxx: Toggle config value visibility</CommandName>
 				</Strings>
 			</Menu>
 		</Menus>
@@ -72,7 +72,7 @@
 				<Parent guid="guidToggleDisplayCommandPackageCmdSet" id="MyMenuGroup" />
 				<Icon guid="guidImages" id="bmpPic1" />
 				<Strings>
-					<ButtonText>Toggle config value visibility</ButtonText>
+					<ButtonText>NoDoxx: Toggle config value visibility</ButtonText>
 				</Strings>
 			</Button>
 
@@ -80,7 +80,7 @@
 				<Parent guid= "guidToggleDisplayCommandPackageCmdSet" id="ToolbarGroup" />
 				<Icon guid="guidImages" id="bmpPic1" />
 				<Strings>
-					<ButtonText>Toggle config value visibility</ButtonText>
+					<ButtonText>NoDoxx: Toggle config value visibility</ButtonText>
 				</Strings>
 			</Button>
 		</Buttons>
@@ -92,7 +92,7 @@
             bitmap strip containing the bitmaps and then there are the numeric ids of the elements used
             inside a button definition. An important aspect of this declaration is that the element id
             must be the actual index (1-based) of the bitmap inside the bitmap strip. -->
-			<Bitmap guid="guidImages" href="Resources\ToggleDisplayCommand.png" usedList="bmpPic1, bmpPic2, bmpPicSearch, bmpPicX, bmpPicArrows, bmpPicStrikethrough"/>
+			<Bitmap guid="guidImages" href="Resources\ToggleDisplayCommand16x16.png" usedList="bmpPic1"/>
 		</Bitmaps>
 	</Commands>
 
@@ -110,11 +110,6 @@
 
 		<GuidSymbol name="guidImages" value="{507258e1-d048-4995-b3c2-a3788a43179f}" >
 			<IDSymbol name="bmpPic1" value="1" />
-			<IDSymbol name="bmpPic2" value="2" />
-			<IDSymbol name="bmpPicSearch" value="3" />
-			<IDSymbol name="bmpPicX" value="4" />
-			<IDSymbol name="bmpPicArrows" value="5" />
-			<IDSymbol name="bmpPicStrikethrough" value="6" />
 		</GuidSymbol>
 	</Symbols>
 </CommandTable>
