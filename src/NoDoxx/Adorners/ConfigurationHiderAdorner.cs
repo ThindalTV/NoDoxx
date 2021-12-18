@@ -102,8 +102,8 @@ namespace NoDoxx.Adorners
                 var hiddenFieldsLabel = new Label()
                 {
                     Content = "Configuration values hidden",
-                    HorizontalAlignment = System.Windows.HorizontalAlignment.Right,
-                    VerticalAlignment = System.Windows.VerticalAlignment.Bottom,
+                    HorizontalAlignment = System.Windows.HorizontalAlignment.Left,
+                    VerticalAlignment = System.Windows.VerticalAlignment.Top,
                     
                     BorderBrush = new SolidColorBrush(Colors.Black),
                     Background = new SolidColorBrush(Colors.LightGray),
