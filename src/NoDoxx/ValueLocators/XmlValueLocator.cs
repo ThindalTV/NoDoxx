@@ -82,7 +82,7 @@ namespace NoDoxx.ValueLocators
                     throw;
                 }
             }
-            catch(Exception ex)
+            catch(Exception)
             {
                 // Not valid xml, probably means it's bare text
                 var startIndex = fullContents.IndexOf(contents);
