@@ -58,7 +58,7 @@ namespace NoDoxx.Adorners
                 HideByIndexes(locator.FindConfigValues(contents));
             } catch
             {
-                HideByIndexes(new[] { new ConfigPosition(0, contents.Length) });
+                //HideByIndexes(new[] { new ConfigPosition(0, contents.Length) });
             }
         }
 
