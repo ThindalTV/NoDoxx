@@ -5,7 +5,7 @@
       "a": {
         "aKey": 12,
         "ok": "So this should still be working",
-        "sadabcadw": "adk"
+        "sadabcadw": "adk" 
       }
     },
     {
@@ -22,9 +22,12 @@
   ],
   "stringKey": "String",
   "intKey": 2,
-  "trueKey": true,
+  "trueKey": true, // Inline comment
   "falseKey": false,
+  "nullKey": null,
+  /* Multiline */
   "objectKey": {
     "subString": "sub"
-  }
+  }, // Comment
+  "key\"with":  "crap",
 }
