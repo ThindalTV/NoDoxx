@@ -24,8 +24,6 @@ namespace NoDoxx.Commands
         /// </summary>
         public static readonly Guid CommandSet = new Guid("45b8c6de-75fb-4667-b5a2-47c9620c3dea");
 
-        public static bool DisplayConfigValues = false;
-
         /// <summary>
         /// VS Package that provides this command, not null.
         /// </summary>
@@ -97,8 +95,7 @@ namespace NoDoxx.Commands
             var documentView = await windowFrame.GetDocumentViewAsync();
             var tw = documentView.TextView;
             var adornerLayer = tw.GetAdornmentLayer("ConfigurationHiderAdorner");
-            DisplayConfigValues = !DisplayConfigValues;
-            adornerLayer.Opacity = DisplayConfigValues ? 0 : 1;
+            adornerLayer.Opacity = adornerLayer.Opacity == 1 ? 0 : 1; // Flip opacity
         }
     }
 }

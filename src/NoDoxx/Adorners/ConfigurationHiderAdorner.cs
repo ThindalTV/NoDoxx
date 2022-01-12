@@ -97,8 +97,9 @@ namespace NoDoxx.Adorners
 
                 // Align the image with the top of the bounds of the text geometry
                 Canvas.SetLeft(image, geometry.Bounds.Left);
+                
                 Canvas.SetTop(image, geometry.Bounds.Top);
-
+                
                 var hiddenFieldsLabel = new Label()
                 {
                     Content = "Configuration values hidden",
@@ -110,8 +111,13 @@ namespace NoDoxx.Adorners
                     FontSize = 16
                 };
 
+                // _layer.Opacity = 1; // Do this in a button callback.
+
+                Canvas.SetTop(hiddenFieldsLabel, _layer.TextView.ViewportTop);
+
                 _layer.AddAdornment(AdornmentPositioningBehavior.TextRelative, span, null, image, null);
-                _layer.AddAdornment(AdornmentPositioningBehavior.ViewportRelative, null, null, hiddenFieldsLabel, null);
+                
+                _layer.AddAdornment(AdornmentPositioningBehavior.OwnerControlled, null, null, hiddenFieldsLabel, null);
             }
         }
     }
