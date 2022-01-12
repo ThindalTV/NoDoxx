@@ -1,16 +1,18 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
     <Metadata>
-        <Identity Id="NoDoxx.8238cd32-5f52-4ecc-9e2a-026e45f04c3e" Version="1.0.1" Language="en-US" Publisher="Thindal" />
+        <Identity Id="NoDoxx.8238cd32-5f52-4ecc-9e2a-026e45f04c3e" Version="1.1.0" Language="en-US" Publisher="Thindal" />
         <DisplayName>Don't Doxx Yourself</DisplayName>
-        <Description xml:space="preserve">It's easy to mess up when streaming, presenting or showing code. Lessen the risk by hiding your configuration values until you actually decide to show them.
+        <Description xml:space="preserve">It's easy to mess up when streaming, presenting or showing code. Lower the risk by hiding your configuration values until you actually decide to show them.
 
-This extension adds blocks over all values in xml and json files. You can click a button to toggle the boxes so you can edit the values, but if you close &amp; reopen the file the </Description>
+This extension hides all values in xml and json files. You can click a button to toggle the boxes so you can edit the values, but if you close &amp; reopen the file the values are hidden again.
+
+The schema is always visible even when the values are hidden.</Description>
         <MoreInfo>https://github.com/ThindalTV/NoDoxx</MoreInfo>
         <License>LICENSE</License>
         <Icon>Resources\Icon.png</Icon>
         <PreviewImage>Resources\Icon.png</PreviewImage>
-        <Tags>Configuration, Configuration Values, Doxx, No Doxx, Presenting, Streaming, Twitch, Youtube, Hide config</Tags>
+        <Tags>Configuration, Configuration Values, Doxx, No Doxx, Presenting, Streaming, Twitch, Youtube, Pair Programming, Hide config</Tags>
     </Metadata>
     <Installation>
         <InstallationTarget Id="Microsoft.VisualStudio.Community" Version="[15.0,17.0)">
