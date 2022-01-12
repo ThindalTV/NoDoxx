@@ -56,7 +56,8 @@ namespace NoDoxx.Adorners
             try
             {
                 HideByIndexes(locator.FindConfigValues(contents));
-            } catch
+            }
+            catch
             {
                 //HideByIndexes(new[] { new ConfigPosition(0, contents.Length) });
             }
@@ -66,7 +67,7 @@ namespace NoDoxx.Adorners
         {
             var pos = positions.GroupBy(p => p.StartIndex).Select(p => p.First()).ToList();
             Clear();
-            foreach( var p in pos)
+            foreach (var p in pos)
             {
                 HideData(p.StartIndex, p.EndIndex);
             }
@@ -97,27 +98,29 @@ namespace NoDoxx.Adorners
 
                 // Align the image with the top of the bounds of the text geometry
                 Canvas.SetLeft(image, geometry.Bounds.Left);
-                
+
                 Canvas.SetTop(image, geometry.Bounds.Top);
-                
-                var hiddenFieldsLabel = new Label()
+
+                var showConfigValuesButton = new Button()
                 {
-                    Content = "Configuration values hidden",
-                    HorizontalAlignment = System.Windows.HorizontalAlignment.Left,
-                    VerticalAlignment = System.Windows.VerticalAlignment.Top,
-                    
-                    BorderBrush = new SolidColorBrush(Colors.Black),
-                    Background = new SolidColorBrush(Colors.LightGray),
-                    FontSize = 16
+                    Content = "Display config values",
+                    Cursor = System.Windows.Input.Cursors.Hand,
+                    Width = 150,
+                    Height = 30
                 };
 
-                // _layer.Opacity = 1; // Do this in a button callback.
+                showConfigValuesButton.Click +=
+                    (object sender,
+                    System.Windows.RoutedEventArgs e) =>
+                    {
+                        _layer.Opacity = _layer.Opacity == 1 ? 0 : 1; // Flip opacity
+                    };
 
-                Canvas.SetTop(hiddenFieldsLabel, _layer.TextView.ViewportTop);
+                Canvas.SetTop(showConfigValuesButton, _layer.TextView.ViewportTop);
 
                 _layer.AddAdornment(AdornmentPositioningBehavior.TextRelative, span, null, image, null);
-                
-                _layer.AddAdornment(AdornmentPositioningBehavior.OwnerControlled, null, null, hiddenFieldsLabel, null);
+
+                _layer.AddAdornment(AdornmentPositioningBehavior.OwnerControlled, null, null, showConfigValuesButton, null);
             }
         }
     }
