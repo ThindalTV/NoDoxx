@@ -24,6 +24,12 @@ namespace NoDoxx.Adorners
         [TextViewRole(PredefinedTextViewRoles.Structured)]
         private AdornmentLayerDefinition commentAdornmentLayer;
 
+        [Export(typeof(AdornmentLayerDefinition))]
+        [Name("ConfigurationHiderButtonsAdorner")]
+        [Order(After = PredefinedAdornmentLayers.Text)]
+        [TextViewRole(PredefinedTextViewRoles.Structured)]
+        private AdornmentLayerDefinition buttonsAdornmentLayer;
+
 #pragma warning restore 649, 169
 
         #region IWpfTextViewCreationListener

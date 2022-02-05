@@ -95,7 +95,9 @@ namespace NoDoxx.Commands
             var documentView = await windowFrame.GetDocumentViewAsync();
             var tw = documentView.TextView;
             var adornerLayer = tw.GetAdornmentLayer("ConfigurationHiderAdorner");
+            var commentLayer = tw.GetAdornmentLayer("ConfigurationHiderCommentAdorner");
             adornerLayer.Opacity = adornerLayer.Opacity == 1 ? 0 : 1; // Flip opacity
+            commentLayer.Opacity = commentLayer.Opacity == 1 ? 0 : 1; // Flip opacity
         }
     }
 }
