@@ -1,6 +1,7 @@
 ﻿using NoDoxx.Interfaces;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Xml;
 
 namespace NoDoxx.ValueLocators
@@ -9,7 +10,9 @@ namespace NoDoxx.ValueLocators
     {
         public IEnumerable<ConfigPosition> FindConfigValues(string fileContent)
         {
-            return (HideXml(fileContent));
+            var values = HideXml(fileContent).ToList();
+            values.AddRange(LocateComments(fileContent));
+            return values;
         }
 
         private IEnumerable<ConfigPosition> HideXml(string fullContents, string contents = null, int contentsStartIndex = 0)
@@ -25,10 +28,10 @@ namespace NoDoxx.ValueLocators
                 var valueStartIndex = fullContents.IndexOf($">{bareWords}<") + 1;
                 if( valueStopIndex == -1)
                 {
-                    ret.Add(new ConfigPosition(valueStartIndex, valueStartIndex + contents.Length));
+                    ret.Add(new ConfigPosition(valueStartIndex, valueStartIndex + contents.Length, ConfigType.Value));
                     return ret;
                 }
-                ret.Add(new ConfigPosition(valueStartIndex, valueStopIndex + valueStartIndex));
+                ret.Add(new ConfigPosition(valueStartIndex, valueStopIndex + valueStartIndex, ConfigType.Value));
                 contents = contents.Substring(valueStopIndex);
             }
 
@@ -49,7 +52,7 @@ namespace NoDoxx.ValueLocators
                         {
                             var valueStartIndex = fullContents.IndexOf(attr.InnerText, tagStartIndex);
                             var valueStopIndex = valueStartIndex + attr.InnerText.Length;
-                            ret.Add(new ConfigPosition(valueStartIndex, valueStopIndex));
+                            ret.Add(new ConfigPosition(valueStartIndex, valueStopIndex, ConfigType.Value));
                         }
                     }
                 }
@@ -65,7 +68,7 @@ namespace NoDoxx.ValueLocators
                             {
                                 var valueStartIndex = fullContents.IndexOf(">" + c.Value) + 1;
                                 var valueStopIndex = valueStartIndex + c.Value.Length;
-                                ret.Add(new ConfigPosition(valueStartIndex, valueStopIndex));
+                                ret.Add(new ConfigPosition(valueStartIndex, valueStopIndex, ConfigType.Value));
                                 continue;
                             }
                             ret.AddRange(HideXml(fullContents, c.InnerXml, 0));
@@ -86,8 +89,30 @@ namespace NoDoxx.ValueLocators
             {
                 // Not valid xml, probably means it's bare text
                 var startIndex = fullContents.IndexOf(contents);
-                ret.Add(new ConfigPosition(startIndex, startIndex + contents.Length));
+                ret.Add(new ConfigPosition(startIndex, startIndex + contents.Length, ConfigType.Value));
             }
+            return ret;
+        }
+
+        internal IEnumerable<ConfigPosition> LocateComments(string contents)
+        {
+            var ret = new List<ConfigPosition>();
+
+            int position = 0;
+            while((position = contents.IndexOf("<!--", position)) != -1)
+            {
+                var start = position;
+                var end = contents.IndexOf("-->", position + "<!--".Length);
+                if( end == -1)
+                {
+                    end = contents.Length;
+                }
+
+                ret.Add(new ConfigPosition(start, end + "-->".Length, ConfigType.Comment));
+                
+                position = end;
+            }
+
             return ret;
         }
     }

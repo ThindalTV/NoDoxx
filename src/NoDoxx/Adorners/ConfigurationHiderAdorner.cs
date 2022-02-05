@@ -12,7 +12,8 @@ namespace NoDoxx.Adorners
 {
     internal sealed class ConfigurationHiderAdorner
     {
-        private readonly IAdornmentLayer _layer;
+        private readonly IAdornmentLayer _configValueLayer;
+        private readonly IAdornmentLayer _commentLayer;
         private readonly IWpfTextView _view;
         private readonly Brush _brush;
         private readonly Pen _pen;
@@ -24,7 +25,9 @@ namespace NoDoxx.Adorners
                 throw new ArgumentNullException("view");
             }
 
-            _layer = view.GetAdornmentLayer("ConfigurationHiderAdorner");
+            _configValueLayer = view.GetAdornmentLayer("ConfigurationHiderAdorner");
+            _commentLayer = view.GetAdornmentLayer("ConfigurationHiderCommentAdorner");
+
             _view = view;
 
             // Create the pen and brush to color the box hiding the config values
@@ -65,20 +68,59 @@ namespace NoDoxx.Adorners
 
         internal void HideByIndexes(IEnumerable<ConfigPosition> positions)
         {
-            var pos = positions.GroupBy(p => p.StartIndex).Select(p => p.First()).ToList();
+            var pos = positions.Where(p=>p.StartIndex != p.EndIndex).GroupBy(p => p.StartIndex).Select(p => p.First()).ToList();
             Clear();
             foreach (var p in pos)
             {
-                HideData(p.StartIndex, p.EndIndex);
+                HideData(p.StartIndex, p.EndIndex, p.Type);
             }
+
+            var showConfigValuesButton = new Button()
+            {
+                Content = "Display config values",
+                Cursor = System.Windows.Input.Cursors.Hand,
+                Width = 150,
+                Height = 30
+            };
+
+            showConfigValuesButton.Click +=
+                (object sender,
+                System.Windows.RoutedEventArgs e) =>
+                {
+                    _configValueLayer.Opacity = _configValueLayer.Opacity == 1 ? 0 : 1; // Flip opacity
+                    };
+
+            var showCommentsButton = new Button()
+            {
+                Content = "Display comments",
+                Cursor = System.Windows.Input.Cursors.Hand,
+                Width = 150,
+                Height = 30,
+                Margin = new System.Windows.Thickness(0, 100, 0, 0)
+            };
+
+            showCommentsButton.Click +=
+                (object sender,
+                System.Windows.RoutedEventArgs e) =>
+                {
+                    _commentLayer.Opacity = _commentLayer.Opacity == 1 ? 0 : 1; // Flip opacity
+                    };
+
+            Canvas.SetTop(showConfigValuesButton, _configValueLayer.TextView.ViewportTop);
+            Canvas.SetTop(showCommentsButton, _commentLayer.TextView.ViewportTop);
+
+            _configValueLayer.AddAdornment(AdornmentPositioningBehavior.OwnerControlled, null, null, showConfigValuesButton, null);
+
+            _commentLayer.AddAdornment(AdornmentPositioningBehavior.OwnerControlled, null, null, showCommentsButton, null);
         }
 
         private void Clear()
         {
-            _layer.RemoveAllAdornments();
+            _configValueLayer.RemoveAllAdornments();
+            _commentLayer.RemoveAllAdornments();
         }
 
-        private void HideData(int startOffset, int stopOffset)
+        private void HideData(int startOffset, int stopOffset, ConfigType type)
         {
             IWpfTextViewLineCollection textViewLines = _view.TextViewLines;
             SnapshotSpan span = new SnapshotSpan(_view.TextSnapshot, Span.FromBounds(startOffset, stopOffset));
@@ -101,26 +143,17 @@ namespace NoDoxx.Adorners
 
                 Canvas.SetTop(image, geometry.Bounds.Top);
 
-                var showConfigValuesButton = new Button()
+                if (type == ConfigType.Value)
                 {
-                    Content = "Display config values",
-                    Cursor = System.Windows.Input.Cursors.Hand,
-                    Width = 150,
-                    Height = 30
-                };
+                    _configValueLayer.AddAdornment(AdornmentPositioningBehavior.TextRelative, span, null, image, null);
+                } else if(type == ConfigType.Comment)
+                {
+                    _commentLayer.AddAdornment(AdornmentPositioningBehavior.TextRelative, span, null, image, null);
+                } else
+                {
+                    throw new ArgumentException($"{type} is not supported.");
+                }
 
-                showConfigValuesButton.Click +=
-                    (object sender,
-                    System.Windows.RoutedEventArgs e) =>
-                    {
-                        _layer.Opacity = _layer.Opacity == 1 ? 0 : 1; // Flip opacity
-                    };
-
-                Canvas.SetTop(showConfigValuesButton, _layer.TextView.ViewportTop);
-
-                _layer.AddAdornment(AdornmentPositioningBehavior.TextRelative, span, null, image, null);
-
-                _layer.AddAdornment(AdornmentPositioningBehavior.OwnerControlled, null, null, showConfigValuesButton, null);
             }
         }
     }
