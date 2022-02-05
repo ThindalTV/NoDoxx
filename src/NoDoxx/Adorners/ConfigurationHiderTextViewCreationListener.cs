@@ -18,6 +18,12 @@ namespace NoDoxx.Adorners
         [TextViewRole(PredefinedTextViewRoles.Structured)]
         private AdornmentLayerDefinition editorAdornmentLayer;
 
+        [Export(typeof(AdornmentLayerDefinition))]
+        [Name("ConfigurationHiderCommentAdorner")]
+        [Order(After = PredefinedAdornmentLayers.Text)]
+        [TextViewRole(PredefinedTextViewRoles.Structured)]
+        private AdornmentLayerDefinition commentAdornmentLayer;
+
 #pragma warning restore 649, 169
 
         #region IWpfTextViewCreationListener

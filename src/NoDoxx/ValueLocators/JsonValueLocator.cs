@@ -20,8 +20,9 @@ namespace NoDoxx.ValueLocators
     {
         public IEnumerable<ConfigPosition> FindConfigValues(string fileContent)
         {
-
-            return HideJson(fileContent);
+            var ret = HideJson(fileContent).ToList();
+            ret.AddRange(HideComments(fileContent));
+            return ret;
         }
 
         private IEnumerable<ConfigPosition> HideJson(string fullJson, string json = null, int jsonStartIndex = 0)
@@ -29,25 +30,7 @@ namespace NoDoxx.ValueLocators
             var ret = new List<ConfigPosition>();
             if (json == null) json = fullJson;
 
-            //var reader = new Utf8JsonReader(System.Text.Encoding.UTF8.GetBytes(json));
-
-            //try
-            //{
-            //    while (reader.Read())
-            //    {
-            //        ret.Add(
-            //            new ConfigPosition(
-            //                (int)reader.TokenStartIndex,
-            //                0
-            //                ));
-            //    }
-            //} catch(Exception ex)
-            //{
-            //    ;
-            //}
-
-
-            System.Text.Json.JsonDocument jsonObject = null;
+            JsonDocument jsonObject = null;
             // Check for valid json
             try
             {
@@ -57,7 +40,7 @@ namespace NoDoxx.ValueLocators
             {
                 var start = fullJson.IndexOf(json);
                 var end = start + json.Length;
-                ret.Add(new ConfigPosition(start, end));
+                ret.Add(new ConfigPosition(start, end, ConfigType.Value));
                 return ret;
             }
 
@@ -100,19 +83,60 @@ namespace NoDoxx.ValueLocators
                     else if (o.Value.ValueKind == JsonValueKind.String)
                     {
                         propertyText = propertyText.Trim();
-                        index = json.IndexOf("\"", index)+1;
-                        propLength = propertyText.Length-2;
-                    } else
+                        index = json.IndexOf("\"", index) + 1;
+                        propLength = propertyText.Length - 2;
+                    }
+                    else
                     {
                         propLength = propertyText.Length;
                     }
 
-                    ret.Add(new ConfigPosition(index+jsonStartIndex, index + jsonStartIndex + propLength));
-                } catch(Exception ex)
+                    ret.Add(new ConfigPosition(index + jsonStartIndex, index + jsonStartIndex + propLength, ConfigType.Value));
+                }
+                catch (Exception ex)
                 {
                     ;
                 }
             }
+            return ret;
+        }
+
+        internal IEnumerable<ConfigPosition> HideComments(string contents)
+        {
+            var ret = new List<ConfigPosition>();
+
+            // Locate line comments
+            int position = 0;
+            while ((position = contents.IndexOf("//", position)) != -1)
+            {
+                var start = position;
+                var end = contents.IndexOf('\n', position + "//".Length);
+                if (end == -1)
+                {
+                    end = contents.Length;
+                }
+
+                ret.Add(new ConfigPosition(start, end + 1, ConfigType.Comment));
+
+                position = end;
+            }
+
+            // Locate multiline comments
+            position = 0;
+            while ((position = contents.IndexOf("/*", position)) != -1)
+            {
+                var start = position;
+                var end = contents.IndexOf("*/", position + "/*".Length);
+                if (end == -1)
+                {
+                    end = contents.Length;
+                }
+
+                ret.Add(new ConfigPosition(start, end + "*/".Length, ConfigType.Comment));
+
+                position = end;
+            }
+
             return ret;
         }
     }

@@ -4,5 +4,8 @@
 		<supportedRuntime version="v4.0" sku=".NETFramework,Version=v4.7.2" />
 	</startup>
 	<container>Here is a xml element with a text child</container>
-	<newContainer>abc</newContainer>
+	<newContainer>abc</newContainer><!--
+	
+	HTML Comment. WOHO
+	-->
 </test>
