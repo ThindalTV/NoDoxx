@@ -18,6 +18,7 @@ namespace NoDoxx.Adorners
         private readonly IWpfTextView _view;
         private readonly Brush _brush;
         private readonly Pen _pen;
+        private readonly StackPanel _buttonsPanel;
 
         public ConfigurationHiderAdorner(IWpfTextView view)
         {
@@ -26,9 +27,10 @@ namespace NoDoxx.Adorners
                 throw new ArgumentNullException("view");
             }
 
-            _configValueLayer = view.GetAdornmentLayer("ConfigurationHiderAdorner");
-            _commentLayer = view.GetAdornmentLayer("ConfigurationHiderCommentAdorner");
+            _configValueLayer = view.GetAdornmentLayer("ConfigurationHiderValuesAdorner");
+            _commentLayer = view.GetAdornmentLayer("ConfigurationHiderCommentsAdorner");
             _buttonsLayer = view.GetAdornmentLayer("ConfigurationHiderButtonsAdorner");
+
             _view = view;
 
             // Create the pen and brush to color the box hiding the config values
@@ -38,39 +40,13 @@ namespace NoDoxx.Adorners
             _pen.Freeze();
 
             _view.LayoutChanged += OnLayoutChanged;
+
+            _buttonsPanel = CreateButtonsPanel();
+
         }
 
-        internal void OnLayoutChanged(object sender, TextViewLayoutChangedEventArgs e)
+        internal StackPanel CreateButtonsPanel()
         {
-            var type = _view.TextSnapshot.ContentType.TypeName;
-            IValueLocator locator = null;
-
-            if (type == "JSON")
-            {
-                locator = new JsonValueLocator();
-            }
-            else if (type == "XML")
-            {
-                locator = new XmlValueLocator();
-            }
-
-            if (locator == null) return;
-
-            var contents = _view.TextSnapshot.GetText();
-            try
-            {
-                HideByIndexes(locator.FindConfigValues(contents));
-            }
-            catch
-            {
-                //HideByIndexes(new[] { new ConfigPosition(0, contents.Length) });
-            }
-        }
-
-        internal void HideByIndexes(IEnumerable<ConfigPosition> positions)
-        {
-            Clear();
-
             var buttonsPanel = new StackPanel();
 
             var showConfigValuesButton = new Button()
@@ -96,7 +72,6 @@ namespace NoDoxx.Adorners
             };
 
             buttonsPanel.Children.Add(showConfigValuesButton);
-
             buttonsPanel.Children.Add(showCommentsButton);
 
             showConfigValuesButton.Click +=
@@ -106,9 +81,8 @@ namespace NoDoxx.Adorners
                     _configValueLayer.Opacity = 0; // Flip opacity
                     _commentLayer.Opacity = 0; // Flip opacity
                     _buttonsLayer.Opacity = 0;
-                    showCommentsButton.Visibility = _commentLayer.Opacity == 0 ? System.Windows.Visibility.Collapsed
-                    : System.Windows.Visibility.Visible;
-                    showConfigValuesButton.Visibility = showCommentsButton.Visibility;
+                    showConfigValuesButton.Visibility = System.Windows.Visibility.Collapsed;
+                    showCommentsButton.Visibility = System.Windows.Visibility.Collapsed;
                 };
 
             showCommentsButton.Click +=
@@ -116,14 +90,42 @@ namespace NoDoxx.Adorners
                 System.Windows.RoutedEventArgs e) =>
                 {
                     _commentLayer.Opacity = 0; // Flip opacity
-                    showCommentsButton.Visibility = _commentLayer.Opacity == 0 ? System.Windows.Visibility.Collapsed
-                    : System.Windows.Visibility.Visible;
+                    showCommentsButton.Visibility = System.Windows.Visibility.Collapsed;
                 };
 
-            Canvas.SetTop(buttonsPanel, _buttonsLayer.TextView.ViewportTop);
-            Canvas.SetLeft(buttonsPanel, _buttonsLayer.TextView.ViewportLeft);
+            return buttonsPanel;
+        }
 
-            _buttonsLayer.AddAdornment(AdornmentPositioningBehavior.OwnerControlled, null, null, buttonsPanel, null);
+        internal void OnLayoutChanged(object sender, TextViewLayoutChangedEventArgs e)
+        {
+            var type = _view.TextSnapshot.ContentType.TypeName;
+            IValueLocator locator = null;
+
+            if (type == "JSON")
+            {
+                locator = new JsonValueLocator();
+            }
+            else if (type == "XML")
+            {
+                locator = new XmlValueLocator();
+            }
+
+            if (locator == null) return;
+
+            var contents = _view.TextSnapshot.GetText();
+            try
+            {
+                HideByIndexes(locator.FindConfigValues(contents));
+            }
+            catch
+            {
+                HideByIndexes(new[] { new ConfigPosition(0, contents.Length, ConfigType.Value) });
+            }
+        }
+
+        internal void HideByIndexes(IEnumerable<ConfigPosition> positions)
+        {
+            Clear();
 
             var pos = positions.Where(p => p.StartIndex != p.EndIndex).GroupBy(p => p.StartIndex).Select(p => p.First()).ToList();
             foreach (var p in pos)
@@ -131,14 +133,16 @@ namespace NoDoxx.Adorners
                 HideData(p.StartIndex, p.EndIndex, p.Type);
             }
 
-
+            Canvas.SetTop(_buttonsPanel, _buttonsLayer.TextView.ViewportTop);
+            Canvas.SetLeft(_buttonsPanel, _buttonsLayer.TextView.ViewportLeft);
+            _buttonsLayer.AddAdornment(AdornmentPositioningBehavior.OwnerControlled, null, null, _buttonsPanel, null);
         }
 
         private void Clear()
         {
-            _buttonsLayer.RemoveAllAdornments();
             _configValueLayer.RemoveAllAdornments();
             _commentLayer.RemoveAllAdornments();
+            _buttonsLayer.RemoveAllAdornments();
         }
 
         private void HideData(int startOffset, int stopOffset, ConfigType type)
@@ -161,7 +165,6 @@ namespace NoDoxx.Adorners
 
                 // Align the image with the top of the bounds of the text geometry
                 Canvas.SetLeft(image, geometry.Bounds.Left);
-
                 Canvas.SetTop(image, geometry.Bounds.Top);
 
                 if (type == ConfigType.Value)

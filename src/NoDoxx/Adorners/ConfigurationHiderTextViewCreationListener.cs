@@ -12,23 +12,27 @@ namespace NoDoxx.Adorners
     {
         // Disable "Field is never assigned to..." and "Field is never used" compiler's warnings. Justification: the field is used by MEF.
 #pragma warning disable 649, 169
-        [Export(typeof(AdornmentLayerDefinition))]
-        [Name("ConfigurationHiderAdorner")]
-        [Order(After = PredefinedAdornmentLayers.Text)]
-        [TextViewRole(PredefinedTextViewRoles.Structured)]
-        private AdornmentLayerDefinition editorAdornmentLayer;
+
 
         [Export(typeof(AdornmentLayerDefinition))]
-        [Name("ConfigurationHiderCommentAdorner")]
+        [Name("ConfigurationHiderValuesAdorner")]
         [Order(After = PredefinedAdornmentLayers.Text)]
         [TextViewRole(PredefinedTextViewRoles.Structured)]
-        private AdornmentLayerDefinition commentAdornmentLayer;
+        private AdornmentLayerDefinition valuesAdornmentLayer;
+
+        [Export(typeof(AdornmentLayerDefinition))]
+        [Name("ConfigurationHiderCommentsAdorner")]
+        [Order(After = PredefinedAdornmentLayers.Text)]
+        [TextViewRole(PredefinedTextViewRoles.Structured)]
+        private AdornmentLayerDefinition commentsAdornmentLayer;
 
         [Export(typeof(AdornmentLayerDefinition))]
         [Name("ConfigurationHiderButtonsAdorner")]
-        [Order(After = PredefinedAdornmentLayers.Text)]
+        [Order(After = "ConfigurationHiderCommentsAdorner")]
         [TextViewRole(PredefinedTextViewRoles.Structured)]
         private AdornmentLayerDefinition buttonsAdornmentLayer;
+
+
 
 #pragma warning restore 649, 169
 
