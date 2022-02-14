@@ -118,17 +118,33 @@ namespace NoDoxx.Adorners
             var contents = _view.TextSnapshot.GetText();
             try
             {
-                HideByIndexes(locator.FindConfigValues(contents));
+                HideByIndexes(locator.FindConfigValues(contents).ToList());
             }
             catch
             {
-                HideByIndexes(new[] { new ConfigPosition(0, contents.Length, ConfigType.Value) });
+                HideByIndexes(new[] { new ConfigPosition(0, contents.Length, ConfigType.Value) }.ToList());
             }
         }
 
-        internal void HideByIndexes(IEnumerable<ConfigPosition> positions)
+        internal void CleanPositions(List<ConfigPosition> positions)
+        {
+            for( int i = 0; i < positions.Count; i++ )
+            {
+                var outer = positions[i];
+                var inner = positions.Where(p => p.StartIndex >= outer.StartIndex && p.EndIndex < outer.EndIndex).ToList();
+                foreach( var innerField in inner)
+                {
+                    positions.Remove(innerField);
+                    i = 0;
+                }
+            }
+
+        }
+        internal void HideByIndexes(List<ConfigPosition> positions)
         {
             Clear();
+
+            CleanPositions(positions);
 
             var pos = positions.Where(p => p.StartIndex != p.EndIndex).GroupBy(p => p.StartIndex).Select(p => p.First()).ToList();
             foreach (var p in pos)
