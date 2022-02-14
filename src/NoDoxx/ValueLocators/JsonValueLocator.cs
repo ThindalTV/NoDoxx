@@ -21,7 +21,7 @@ namespace NoDoxx.ValueLocators
         public IEnumerable<ConfigPosition> FindConfigValues(string fileContent)
         {
             var ret = HideJson(fileContent).ToList();
-            ret.AddRange(HideComments(fileContent));
+            ret.AddRange(HideComments(fileContent, ret));
             return ret;
         }
 
@@ -101,7 +101,7 @@ namespace NoDoxx.ValueLocators
             return ret;
         }
 
-        internal IEnumerable<ConfigPosition> HideComments(string contents)
+        internal IEnumerable<ConfigPosition> HideComments(string contents, List<ConfigPosition> jsonValues)
         {
             var ret = new List<ConfigPosition>();
 
@@ -125,6 +125,16 @@ namespace NoDoxx.ValueLocators
             position = 0;
             while ((position = contents.IndexOf("/*", position)) != -1)
             {
+                if( jsonValues.Any(v => v.StartIndex <= position && v.EndIndex > position))
+                {
+                    // We're in a value field
+                    position++;
+                    if (position >= contents.Length)
+                    {
+                        break;
+                    }
+                    continue;
+                }
                 var start = position;
                 var end = contents.IndexOf("*/", position + "/*".Length);
                 if (end == -1)
