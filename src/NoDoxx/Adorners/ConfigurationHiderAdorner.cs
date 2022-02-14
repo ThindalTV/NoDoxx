@@ -47,14 +47,17 @@ namespace NoDoxx.Adorners
 
         internal StackPanel CreateButtonsPanel()
         {
-            var buttonsPanel = new StackPanel();
+            var buttonsPanel = new StackPanel()
+            {
+                Orientation = Orientation.Horizontal
+            };
 
             var showConfigValuesButton = new Button()
             {
                 Content = "Display config values",
                 Padding = new System.Windows.Thickness(20),
                 Cursor = System.Windows.Input.Cursors.Hand,
-                Margin = new System.Windows.Thickness(10),
+                Margin = new System.Windows.Thickness(100, 10, 10, 10),
                 Visibility = _configValueLayer.Opacity == 0
                 ? System.Windows.Visibility.Collapsed
                 : System.Windows.Visibility.Visible
