@@ -50,6 +50,7 @@
     <None Include="AnotherJson.json" />
     <None Include="App.config" />
     <None Include="config.json" />
+    <None Include="test.json" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Random.xml" />
