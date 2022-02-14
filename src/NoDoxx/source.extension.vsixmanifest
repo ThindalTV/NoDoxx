@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
     <Metadata>
-        <Identity Id="NoDoxx.8238cd32-5f52-4ecc-9e2a-026e45f04c3e" Version="1.2.2" Language="en-US" Publisher="Thindal" />
+        <Identity Id="NoDoxx.8238cd32-5f52-4ecc-9e2a-026e45f04c3e" Version="1.2.3" Language="en-US" Publisher="Thindal" />
         <DisplayName>Don't Doxx Yourself</DisplayName>
         <Description xml:space="preserve">It's easy to mess up when streaming, presenting or showing code. Lower the risk by hiding your configuration values until you actually decide to show them.
 
