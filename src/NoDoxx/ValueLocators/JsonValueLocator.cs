@@ -6,15 +6,6 @@ using System.Text.Json;
 
 namespace NoDoxx.ValueLocators
 {
-    enum ValueType
-    {
-        Null,
-        Boolean,
-        String,
-        Object,
-        Array,
-        Number
-    }
 
     internal class JsonValueLocator : IValueLocator
     {
@@ -27,85 +18,108 @@ namespace NoDoxx.ValueLocators
 
         private IEnumerable<ConfigPosition> HideJson(string fullJson, string json = null, int jsonStartIndex = 0)
         {
-            var ret = new List<ConfigPosition>();
+            var returnValue = new List<ConfigPosition>();
             if (json == null) json = fullJson;
 
-            JsonDocument jsonObject = null;
+            JsonDocument jsonObject;
             // Check for valid json
             try
             {
                 jsonObject = JsonDocument.Parse(json, new JsonDocumentOptions() { CommentHandling = JsonCommentHandling.Skip, AllowTrailingCommas = true });
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 var start = fullJson.IndexOf(json);
                 var end = start + json.Length;
-                ret.Add(new ConfigPosition(start, end, ConfigType.Value));
-                return ret;
+                returnValue.Add(new ConfigPosition(start, end, ConfigType.Value));
+                return returnValue;
             }
 
-            var obj = jsonObject.RootElement.EnumerateObject();
-            foreach (var o in obj)
+            returnValue.AddRange(DetermineConfigPositions(fullJson, jsonObject, json, jsonStartIndex));
+            return returnValue;
+        }
+
+        private IEnumerable<ConfigPosition> DetermineConfigPositions(string fullJsonString, JsonDocument jsonDocument, string json = null, int jsonStartIndex = 0)
+        {
+            var returnValue = new List<ConfigPosition>();
+            foreach (var jsonObject in jsonDocument.RootElement.EnumerateObject())
             {
-                if (o.Value.ValueKind == JsonValueKind.Object)
-                {
-                    var objString = o.Value.ToString();
-                    ret.AddRange(HideJson(fullJson, objString, fullJson.IndexOf(objString)));
-                    jsonStartIndex = ret.Max(r => r.EndIndex);
-                    continue;
-                }
-
-                if (o.Value.ValueKind == JsonValueKind.Array)
-                {
-                    var objString = o.Value.ToString();
-                    foreach (var arrayItem in o.Value.EnumerateArray())
-                    {
-                        ret.AddRange(HideJson(fullJson, arrayItem.ToString(), fullJson.IndexOf(objString)));
-                    }
-                    jsonStartIndex = ret.Max(r => r.EndIndex);
-                    continue;
-                }
-
-                try
-                {
-                    // Get value part of property
-                    var propertyText = o.ToString();
-                    jsonStartIndex = Math.Max(fullJson.IndexOf(json, Math.Max(jsonStartIndex, 0)), 0);
-                    var index = json.IndexOf(propertyText);
-                    var afterColonOffset = propertyText.IndexOf(':') + 1;
-                    propertyText = propertyText.Substring(afterColonOffset);
-                    index = index + afterColonOffset;
-
-                    int propLength = -1;
-                    if (o.Value.ValueKind == JsonValueKind.True) propLength = propertyText.Length;
-                    else if (o.Value.ValueKind == JsonValueKind.False) propLength = propertyText.Length;
-                    else if (o.Value.ValueKind == JsonValueKind.Null) propLength = propertyText.Length;
-                    else if (o.Value.ValueKind == JsonValueKind.String)
-                    {
-                        propertyText = propertyText.Trim();
-                        index = json.IndexOf("\"", index) + 1;
-                        propLength = propertyText.Length - 2;
-                    }
-                    else
-                    {
-                        propLength = propertyText.Length;
-                    }
-
-                    ret.Add(new ConfigPosition(index + jsonStartIndex, index + jsonStartIndex + propLength, ConfigType.Value));
-                }
-                catch (Exception ex)
-                {
-                    ;
-                }
+                returnValue.AddRange(GetConfigPosition(jsonObject, fullJsonString, json));
+                jsonStartIndex = returnValue.Max(r => r.EndIndex);
             }
-            return ret;
+            return returnValue;
+        }
+
+        private IEnumerable<ConfigPosition> GetConfigPosition(JsonProperty jsonObject, string fullJsonString, string json = null)
+        {
+            if (jsonObject.Value.ValueKind == JsonValueKind.Object)
+            {
+                var objString = jsonObject.Value.ToString();
+                return HideJson(fullJsonString, objString, fullJsonString.IndexOf(objString));
+            }
+
+            var returnValue = new List<ConfigPosition>();
+            if (jsonObject.Value.ValueKind == JsonValueKind.Array)
+            {
+                var objString = jsonObject.Value.ToString();
+                foreach (var arrayItem in jsonObject.Value.EnumerateArray())
+                    returnValue.AddRange(HideJson(fullJsonString, arrayItem.ToString(), fullJsonString.IndexOf(objString)));
+
+                return returnValue;
+            }
+
+            try
+            {
+                // Get value part of property
+                int jsonStartIndex = GetPropertTextAndIndex(jsonObject, fullJsonString, json, out string propertyText, out int index);
+
+                int propLength;
+                if (jsonObject.Value.ValueKind == JsonValueKind.String)
+                {
+                    propertyText = propertyText.Trim();
+                    index = json.IndexOf("\"", index) + 1;
+                    propLength = propertyText.Length - 2;
+                }
+                else
+                {
+                    propLength = propertyText.Length;
+                }
+
+                returnValue.Add(new ConfigPosition(index + jsonStartIndex, index + jsonStartIndex + propLength, ConfigType.Value));
+            }
+            catch (Exception)
+            { }
+
+            return returnValue;
+        }
+
+        private static int GetPropertTextAndIndex(JsonProperty jsonObject, string fullJsonString, string json, out string propertyText, out int index)
+        {
+            propertyText = jsonObject.ToString();
+            int jsonStartIndex = Math.Max(fullJsonString.IndexOf(json, 0), 0);
+            index = json.IndexOf(propertyText);
+            var afterColonOffset = propertyText.IndexOf(':') + 1;
+            propertyText = propertyText.Substring(afterColonOffset);
+            index += afterColonOffset;
+            return jsonStartIndex;
         }
 
         internal IEnumerable<ConfigPosition> HideComments(string contents, List<ConfigPosition> jsonValues)
         {
-            var ret = new List<ConfigPosition>();
+            var returnValue = new List<ConfigPosition>();
 
             // Locate line comments
+            returnValue.AddRange(LocateInlineComments(contents));
+
+            // Locate multiline comments
+            returnValue.AddRange(LocateMultiLineComments(contents, jsonValues));
+
+            return returnValue;
+        }
+
+        private IEnumerable<ConfigPosition> LocateInlineComments(string contents)
+        {
+            var returnValue = new List<ConfigPosition>();
             int position = 0;
             while ((position = contents.IndexOf("//", position)) != -1)
             {
@@ -116,23 +130,24 @@ namespace NoDoxx.ValueLocators
                     end = contents.Length;
                 }
 
-                ret.Add(new ConfigPosition(start, end + 1, ConfigType.Comment));
+                returnValue.Add(new ConfigPosition(start, end + 1, ConfigType.Comment));
 
                 position = end;
             }
+            return returnValue;
+        }
 
-            // Locate multiline comments
-            position = 0;
-            while ((position = contents.IndexOf("/*", position)) != -1)
+        private IEnumerable<ConfigPosition> LocateMultiLineComments(string contents, List<ConfigPosition> jsonValues)
+        {
+            var returnValue = new List<ConfigPosition>();
+
+            int position = 0;
+            while (position < contents.Length && (position = contents.IndexOf("/*", position)) != -1)
             {
-                if( jsonValues.Any(v => v.StartIndex <= position && v.EndIndex > position))
+                if (jsonValues.Any(v => v.StartIndex <= position && v.EndIndex > position))
                 {
                     // We're in a value field
                     position++;
-                    if (position >= contents.Length)
-                    {
-                        break;
-                    }
                     continue;
                 }
                 var start = position;
@@ -142,12 +157,12 @@ namespace NoDoxx.ValueLocators
                     end = contents.Length;
                 }
 
-                ret.Add(new ConfigPosition(start, end + "*/".Length, ConfigType.Comment));
+                returnValue.Add(new ConfigPosition(start, end + "*/".Length, ConfigType.Comment));
 
                 position = end;
             }
 
-            return ret;
+            return returnValue;
         }
     }
 }
