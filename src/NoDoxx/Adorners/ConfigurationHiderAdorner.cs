@@ -131,6 +131,7 @@ namespace NoDoxx.Adorners
             if (locator == null) return;
 
             var contents = _view.TextSnapshot.GetText();
+
             try
             {
                 HideByIndexes(locator.FindConfigValues(contents).ToList());
@@ -172,7 +173,6 @@ namespace NoDoxx.Adorners
         {
             _configValueLayer.RemoveAllAdornments();
             _commentLayer.RemoveAllAdornments();
-            //_buttonsLayer.RemoveAllAdornments();
         }
 
         private void HideData(int startOffset, int stopOffset, ConfigType type)
