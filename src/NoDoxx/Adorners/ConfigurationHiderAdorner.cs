@@ -1,4 +1,5 @@
-﻿using Microsoft.VisualStudio.Text;
+﻿using Microsoft.Internal.VisualStudio.PlatformUI;
+using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
 using NoDoxx.Interfaces;
 using NoDoxx.ValueLocators;
@@ -19,6 +20,8 @@ namespace NoDoxx.Adorners
         private readonly Brush _brush;
         private readonly Pen _pen;
         private readonly StackPanel _buttonsPanel;
+
+        private bool ValuesAreHidden => _commentLayer.Opacity == 1;
 
         public ConfigurationHiderAdorner(IWpfTextView view)
         {
@@ -43,13 +46,14 @@ namespace NoDoxx.Adorners
 
             _buttonsPanel = CreateButtonsPanel();
 
+            _buttonsLayer.AddAdornment(AdornmentPositioningBehavior.OwnerControlled, null, null, _buttonsPanel, null);
         }
 
         internal StackPanel CreateButtonsPanel()
         {
             var buttonsPanel = new StackPanel()
             {
-                Orientation = Orientation.Horizontal
+                Orientation = Orientation.Horizontal,
             };
 
             var showConfigValuesButton = new Button()
@@ -57,7 +61,7 @@ namespace NoDoxx.Adorners
                 Content = "Display config values",
                 Padding = new System.Windows.Thickness(20),
                 Cursor = System.Windows.Input.Cursors.Hand,
-                Margin = new System.Windows.Thickness(100, 10, 10, 10),
+                Margin = new System.Windows.Thickness(10, 10, 10, 10),
                 Visibility = _configValueLayer.Opacity == 0
                 ? System.Windows.Visibility.Collapsed
                 : System.Windows.Visibility.Visible
@@ -68,7 +72,7 @@ namespace NoDoxx.Adorners
                 Content = "Display comments",
                 Cursor = System.Windows.Input.Cursors.Hand,
                 Padding = new System.Windows.Thickness(20),
-                Margin = new System.Windows.Thickness(10),
+                Margin = new System.Windows.Thickness(10, 10, 25, 10),
                 Visibility = _commentLayer.Opacity == 0
                 ? System.Windows.Visibility.Collapsed
                 : System.Windows.Visibility.Visible
@@ -101,6 +105,17 @@ namespace NoDoxx.Adorners
 
         internal void OnLayoutChanged(object sender, TextViewLayoutChangedEventArgs e)
         {
+            if (!ValuesAreHidden)
+            {
+                return;
+            }
+
+            // Adjust button layer
+            if (_view.ViewportRight != 0 && _buttonsPanel.ActualWidth != 0)
+            {
+                _buttonsPanel.Margin = new System.Windows.Thickness(_view.ViewportRight - _buttonsPanel.ActualWidth, 0, 0, 0);
+            }
+
             var type = _view.TextSnapshot.ContentType.TypeName;
             IValueLocator locator = null;
 
@@ -128,11 +143,11 @@ namespace NoDoxx.Adorners
 
         internal void CleanPositions(List<ConfigPosition> positions)
         {
-            for( int i = 0; i < positions.Count; i++ )
+            for (int i = 0; i < positions.Count; i++)
             {
                 var outer = positions[i];
                 var inner = positions.Where(p => p.StartIndex >= outer.StartIndex && p.EndIndex < outer.EndIndex).ToList();
-                foreach( var innerField in inner)
+                foreach (var innerField in inner)
                 {
                     positions.Remove(innerField);
                     i = 0;
@@ -151,17 +166,13 @@ namespace NoDoxx.Adorners
             {
                 HideData(p.StartIndex, p.EndIndex, p.Type);
             }
-
-            Canvas.SetTop(_buttonsPanel, _buttonsLayer.TextView.ViewportTop);
-            Canvas.SetLeft(_buttonsPanel, _buttonsLayer.TextView.ViewportLeft);
-            _buttonsLayer.AddAdornment(AdornmentPositioningBehavior.OwnerControlled, null, null, _buttonsPanel, null);
         }
 
         private void Clear()
         {
             _configValueLayer.RemoveAllAdornments();
             _commentLayer.RemoveAllAdornments();
-            _buttonsLayer.RemoveAllAdornments();
+            //_buttonsLayer.RemoveAllAdornments();
         }
 
         private void HideData(int startOffset, int stopOffset, ConfigType type)
