@@ -21,6 +21,10 @@ namespace NoDoxx.ValueLocators
 
             if (contents == null) contents = fullContents;
 
+            // Break out of comments
+            if (contents.StartsWith("<!--") && contents.EndsWith("-->")) return ret;
+
+            // Bare text
             if( !contents.StartsWith("<"))
             {
                 var valueStopIndex = contents.IndexOf("<");
@@ -37,6 +41,7 @@ namespace NoDoxx.ValueLocators
 
             if (String.IsNullOrWhiteSpace(contents)) return ret;
 
+            // Xml
             try
             {
                 var xmlDocument = new XmlDocument();
@@ -71,7 +76,7 @@ namespace NoDoxx.ValueLocators
                                 ret.Add(new ConfigPosition(valueStartIndex, valueStopIndex, ConfigType.Value));
                                 continue;
                             }
-                            ret.AddRange(HideXml(fullContents, c.InnerXml, 0));
+                            ret.AddRange(HideXml(fullContents, c.OuterXml, 0));
                         }
                     }
                 }
@@ -85,7 +90,7 @@ namespace NoDoxx.ValueLocators
                     throw;
                 }
             }
-            catch(Exception)
+            catch(Exception ex)
             {
                 // Not valid xml, probably means it's bare text
                 var startIndex = fullContents.IndexOf(contents);
