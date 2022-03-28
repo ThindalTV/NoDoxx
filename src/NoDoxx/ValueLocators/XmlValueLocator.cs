@@ -71,9 +71,12 @@ namespace NoDoxx.ValueLocators
                         {
                             if( c.NodeType == XmlNodeType.Text)
                             {
-                                var valueStartIndex = fullContents.IndexOf(">" + c.Value) + 1;
-                                var valueStopIndex = valueStartIndex + c.Value.Length;
-                                ret.Add(new ConfigPosition(valueStartIndex, valueStopIndex, ConfigType.Value));
+                                var valueStartIndex = 0;
+                                while( (valueStartIndex = fullContents.IndexOf($">{c.Value}<", valueStartIndex)) > 0) {
+                                    valueStartIndex++;
+                                    var valueStopIndex = valueStartIndex + c.Value.Length;
+                                    ret.Add(new ConfigPosition(valueStartIndex, valueStopIndex, ConfigType.Value));
+                                }
                                 continue;
                             }
                             ret.AddRange(HideXml(fullContents, c.OuterXml, 0));

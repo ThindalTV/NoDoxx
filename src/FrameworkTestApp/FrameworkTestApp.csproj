@@ -55,5 +55,8 @@
   <ItemGroup>
     <None Include="Random.xml" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="RepeatedBareWords.xml" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
