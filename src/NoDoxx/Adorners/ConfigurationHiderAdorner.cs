@@ -1,13 +1,12 @@
-﻿using Microsoft.Internal.VisualStudio.PlatformUI;
-using Microsoft.VisualStudio.Text;
+﻿using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
-using NoDoxx.Interfaces;
-using NoDoxx.ValueLocators;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Controls;
 using System.Windows.Media;
+using NoDoxx.Interfaces;
+using NoDoxx.ValueLocators;
 
 namespace NoDoxx.Adorners
 {
@@ -145,7 +144,7 @@ namespace NoDoxx.Adorners
                 var contents = _view.TextSnapshot.GetText();
                 if (contents.GetHashCode() != _currentContentsHash)
                 {
-                    // Locate the config values
+                    // Locate the config values because the contents has changed
                     _configValuePositions = locator.FindConfigValues(contents).ToList();
                 }
                 
@@ -161,8 +160,14 @@ namespace NoDoxx.Adorners
             }
         }
 
+        /// <summary>
+        /// Makes sure that the start & end indexes of the positions don't overlap and if they do, remove them.
+        /// </summary>
+        /// <param name="positions">A list of positions. Will be returned as clean.</param>
         internal void CleanPositions(List<ConfigPosition> positions)
         {
+            // TODO: Optimization target. Currently doing a bubble
+
             for (int i = 0; i < positions.Count; i++)
             {
                 var outer = positions[i];
@@ -175,6 +180,7 @@ namespace NoDoxx.Adorners
             }
 
         }
+        
         internal void HideByIndexes(List<ConfigPosition> positions)
         {
             Clear();

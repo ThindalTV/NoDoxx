@@ -1,11 +1,8 @@
-﻿using NoDoxx.Interfaces;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using System.Xml;
+using NoDoxx.Interfaces;
 
 namespace NoDoxx.ValueLocators
 {
