@@ -134,10 +134,11 @@ namespace NoDoxx.Adorners
                 _buttonsPanel.Margin = new System.Windows.Thickness(_view.ViewportRight - _buttonsPanel.ActualWidth, 0, 0, 0);
             }
 
-            var contents = _view.TextSnapshot.GetText();
+            var contentsLength = _view.TextSnapshot.Length;
 
             try
             {
+                var contents = _view.TextSnapshot.GetText();
                 if (contents.GetHashCode() != _currentContentsHash)
                 {
                     // Locate the config values
@@ -152,7 +153,7 @@ namespace NoDoxx.Adorners
             catch
             {
                 // Hide everything if we encounter errors while hiding
-                HideByIndexes(new[] { new ConfigPosition(0, contents.Length, ConfigType.Value) }.ToList());
+                HideByIndexes(new[] { new ConfigPosition(0, contentsLength, ConfigType.Value) }.ToList());
             }
         }
 
