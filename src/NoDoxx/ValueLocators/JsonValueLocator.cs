@@ -109,7 +109,7 @@ namespace NoDoxx.ValueLocators
             var returnValue = new List<ConfigPosition>();
 
             // Locate line comments
-            returnValue.AddRange(LocateInlineComments(contents));
+            returnValue.AddRange(LocateInlineComments(contents, jsonValues));
 
             // Locate multiline comments
             returnValue.AddRange(LocateMultiLineComments(contents, jsonValues));
@@ -117,12 +117,19 @@ namespace NoDoxx.ValueLocators
             return returnValue;
         }
 
-        private IEnumerable<ConfigPosition> LocateInlineComments(string contents)
+        private IEnumerable<ConfigPosition> LocateInlineComments(string contents, List<ConfigPosition> jsonValues)
         {
             var returnValue = new List<ConfigPosition>();
             int position = 0;
             while ((position = contents.IndexOf("//", position)) != -1)
             {
+                if (jsonValues.Any(v => v.StartIndex <= position && v.EndIndex > position))
+                {
+                    // We're in a value field
+                    position++;
+                    continue;
+                }
+                
                 var start = position;
                 var end = contents.IndexOf('\n', position + "//".Length);
                 if (end == -1)
