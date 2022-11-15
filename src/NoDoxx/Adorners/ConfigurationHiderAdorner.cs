@@ -21,6 +21,9 @@ namespace NoDoxx.Adorners
         private readonly Pen _pen;
         private readonly StackPanel _buttonsPanel;
 
+        private int _currentContentsHash;
+        private List<ConfigPosition> _configValuePositions;
+
         private bool ValuesAreHidden => _commentLayer.Opacity == 1;
 
         public ConfigurationHiderAdorner(IWpfTextView view)
@@ -132,9 +135,16 @@ namespace NoDoxx.Adorners
 
             var contents = _view.TextSnapshot.GetText();
 
+            if (contents.GetHashCode() != _currentContentsHash)
+            {
+                _configValuePositions = locator.FindConfigValues(contents).ToList();
+            }
+
+
             try
             {
-                HideByIndexes(locator.FindConfigValues(contents).ToList());
+                HideByIndexes(_configValuePositions);
+                _currentContentsHash = contents.GetHashCode();
             }
             catch
             {
