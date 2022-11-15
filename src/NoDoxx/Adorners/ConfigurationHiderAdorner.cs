@@ -131,7 +131,11 @@ namespace NoDoxx.Adorners
             // Adjust button layer position
             if (_view.ViewportRight != 0 && _buttonsPanel.ActualWidth != 0)
             {
-                _buttonsPanel.Margin = new System.Windows.Thickness(_view.ViewportRight - _buttonsPanel.ActualWidth, 0, 0, 0);
+                _buttonsPanel.Margin = new System.Windows.Thickness(
+                    _view.ViewportWidth - _buttonsPanel.ActualWidth,
+                    _view.ViewportHeight - _buttonsPanel.ActualHeight,
+                    _view.ViewportWidth,
+                    _view.ViewportHeight);
             }
 
             var contentsLength = _view.TextSnapshot.Length;
