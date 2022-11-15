@@ -157,7 +157,7 @@ namespace NoDoxx.Adorners
             catch
             {
                 // Hide everything if we encounter errors while hiding
-                HideByIndexes(new[] { new ConfigPosition(0, contentsLength, ConfigType.Value) }.ToList());
+                HideByIndexes(new[] { new ConfigPosition(0, contentsLength, ConfigType.Value, "ERROR, cannot parse") }.ToList());
             }
         }
 

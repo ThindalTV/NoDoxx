@@ -32,10 +32,10 @@ namespace NoDoxx.ValueLocators
                 var valueStartIndex = fullContents.IndexOf($">{bareWords}<") + 1;
                 if( valueStopIndex == -1)
                 {
-                    ret.Add(new ConfigPosition(valueStartIndex, valueStartIndex + contents.Length, ConfigType.Value));
+                    ret.Add(new ConfigPosition(valueStartIndex, valueStartIndex + contents.Length, ConfigType.Value, $"{bareWords} (Document End)"));
                     return ret;
                 }
-                ret.Add(new ConfigPosition(valueStartIndex, valueStopIndex + valueStartIndex, ConfigType.Value));
+                ret.Add(new ConfigPosition(valueStartIndex, valueStopIndex + valueStartIndex, ConfigType.Value, bareWords));
                 contents = contents.Substring(valueStopIndex);
             }
 
@@ -57,7 +57,7 @@ namespace NoDoxx.ValueLocators
                         {
                             var valueStartIndex = fullContents.IndexOf(attr.InnerText, tagStartIndex);
                             var valueStopIndex = valueStartIndex + attr.InnerText.Length;
-                            ret.Add(new ConfigPosition(valueStartIndex, valueStopIndex, ConfigType.Value));
+                            ret.Add(new ConfigPosition(valueStartIndex, valueStopIndex, ConfigType.Value, attr.InnerText));
                         }
                     }
                 }
@@ -75,7 +75,7 @@ namespace NoDoxx.ValueLocators
                                 while( (valueStartIndex = fullContents.IndexOf($">{c.Value}<", valueStartIndex)) > 0) {
                                     valueStartIndex++;
                                     var valueStopIndex = valueStartIndex + c.Value.Length;
-                                    ret.Add(new ConfigPosition(valueStartIndex, valueStopIndex, ConfigType.Value));
+                                    ret.Add(new ConfigPosition(valueStartIndex, valueStopIndex, ConfigType.Value, c.InnerText));
                                 }
                                 continue;
                             }
@@ -97,7 +97,7 @@ namespace NoDoxx.ValueLocators
             {
                 // Not valid xml, probably means it's bare text
                 var startIndex = fullContents.IndexOf(contents);
-                ret.Add(new ConfigPosition(startIndex, startIndex + contents.Length, ConfigType.Value));
+                ret.Add(new ConfigPosition(startIndex, startIndex + contents.Length, ConfigType.Value, "ERROR: Invalid xml"));
             }
             return ret;
         }
@@ -116,7 +116,7 @@ namespace NoDoxx.ValueLocators
                     end = contents.Length;
                 }
 
-                ret.Add(new ConfigPosition(start, end + "-->".Length, ConfigType.Comment));
+                ret.Add(new ConfigPosition(start, end + "-->".Length, ConfigType.Comment, contents.Substring(start, end-start)));
                 
                 position = end;
             }

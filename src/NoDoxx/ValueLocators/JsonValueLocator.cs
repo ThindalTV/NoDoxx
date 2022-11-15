@@ -31,7 +31,7 @@ namespace NoDoxx.ValueLocators
             {
                 var start = fullJson.IndexOf(json);
                 var end = start + json.Length;
-                returnValue.Add(new ConfigPosition(start, end, ConfigType.Value));
+                returnValue.Add(new ConfigPosition(start, end, ConfigType.Value, "ERROR, cannot parse"));
                 return returnValue;
             }
 
@@ -85,7 +85,7 @@ namespace NoDoxx.ValueLocators
                     propLength = propertyText.Length;
                 }
 
-                returnValue.Add(new ConfigPosition(index + jsonStartIndex, index + jsonStartIndex + propLength, ConfigType.Value));
+                returnValue.Add(new ConfigPosition(index + jsonStartIndex, index + jsonStartIndex + propLength, ConfigType.Value, jsonObject.Value.ToString()));
             }
             catch (Exception)
             { }
@@ -130,7 +130,7 @@ namespace NoDoxx.ValueLocators
                     end = contents.Length;
                 }
 
-                returnValue.Add(new ConfigPosition(start, end + 1, ConfigType.Comment));
+                returnValue.Add(new ConfigPosition(start, end + 1, ConfigType.Comment, contents.Substring(start, end-start)));
 
                 position = end;
             }
@@ -157,7 +157,7 @@ namespace NoDoxx.ValueLocators
                     end = contents.Length;
                 }
 
-                returnValue.Add(new ConfigPosition(start, end + "*/".Length, ConfigType.Comment));
+                returnValue.Add(new ConfigPosition(start, end + "*/".Length, ConfigType.Comment, contents.Substring(start, end-start)));
 
                 position = end;
             }

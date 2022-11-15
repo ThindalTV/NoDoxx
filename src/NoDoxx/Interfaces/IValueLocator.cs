@@ -7,12 +7,19 @@ namespace NoDoxx.Interfaces
         public int StartIndex { get; }
         public int EndIndex { get; }
         public ConfigType Type { get; }
+        public string Contents { get; }
 
-        public ConfigPosition(int startIndex, int endIndex, ConfigType type)
+        public ConfigPosition(int startIndex, int endIndex, ConfigType type, string contents)
         {
+            Contents = contents;
             StartIndex = startIndex;
             EndIndex = endIndex;
             Type = type;
+        }
+
+        public override string ToString()
+        {
+            return $"{Type} {StartIndex} - {EndIndex}: {Contents}";
         }
     }
 
