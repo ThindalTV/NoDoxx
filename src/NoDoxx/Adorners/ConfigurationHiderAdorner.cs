@@ -108,7 +108,7 @@ namespace NoDoxx.Adorners
 
         internal void OnLayoutChanged(object sender, TextViewLayoutChangedEventArgs e)
         {
-            if (!ValuesAreHidden)
+            if (!ValuesAreHidden && _currentContentsHash != 0)
             {
                 return;
             }
@@ -122,11 +122,11 @@ namespace NoDoxx.Adorners
             var type = _view.TextSnapshot.ContentType.TypeName;
             IValueLocator locator = null;
 
-            if (type == "JSON")
+            if (type.ToUpper() == "JSON")
             {
                 locator = new JsonValueLocator();
             }
-            else if (type == "XML")
+            else if (type.ToUpper() == "XML")
             {
                 locator = new XmlValueLocator();
             }
