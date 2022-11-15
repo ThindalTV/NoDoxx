@@ -49,7 +49,7 @@ namespace NoDoxx.Adorners
 
             _buttonsPanel = CreateButtonsPanel();
 
-            _buttonsLayer.AddAdornment(AdornmentPositioningBehavior.OwnerControlled, null, null, _buttonsPanel, null);
+            _buttonsLayer.AddAdornment(AdornmentPositioningBehavior.ViewportRelative, null, null, _buttonsPanel, null);
         }
 
         internal StackPanel CreateButtonsPanel()
