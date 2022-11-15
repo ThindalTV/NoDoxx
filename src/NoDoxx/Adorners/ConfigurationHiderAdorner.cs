@@ -20,6 +20,8 @@ namespace NoDoxx.Adorners
         private readonly Pen _pen;
         private readonly StackPanel _buttonsPanel;
 
+        private readonly object _locatorLock = new object();
+
         private int _currentContentsHash;
         private List<ConfigPosition> _configValuePositions;
 
@@ -107,51 +109,59 @@ namespace NoDoxx.Adorners
 
         internal void OnLayoutChanged(object sender, TextViewLayoutChangedEventArgs e)
         {
-            if (!ValuesAreHidden && _currentContentsHash != 0)
-            {
-                return;
-            }
-
-            // Identify file renderer and select the value locator
-            var type = _view.TextSnapshot.ContentType.TypeName;
-            IValueLocator locator = null;
-
-            if (type.ToUpper() == "JSON")
-            {
-                locator = new JsonValueLocator();
-            }
-            else if (type.ToUpper() == "XML")
-            {
-                locator = new RegExXmlValueLocator();
-            }
-
-            if (locator == null) return;
-
-            // Adjust button layer position
-            if (_view.ViewportRight != 0 && _buttonsPanel.ActualWidth != 0)
-            {
-                _buttonsPanel.Margin = new System.Windows.Thickness(
-                    _view.ViewportWidth - _buttonsPanel.ActualWidth,
-                    _view.ViewportHeight - _buttonsPanel.ActualHeight,
-                    _view.ViewportWidth,
-                    _view.ViewportHeight);
-            }
-
             var contentsLength = _view.TextSnapshot.Length;
 
             try
             {
-                var contents = _view.TextSnapshot.GetText();
-                if (contents.GetHashCode() != _currentContentsHash)
+                if (!ValuesAreHidden && _currentContentsHash != 0)
                 {
-                    // Locate the config values because the contents has changed
-                    _configValuePositions = locator.FindConfigValues(contents).ToList();
+                    return;
                 }
-                
-                HideByIndexes(_configValuePositions);
 
-                // Only update the current hash if we successfully hid the values
-                _currentContentsHash = contents.GetHashCode();
+                // Adjust button layer position
+                if (_view.ViewportRight != 0 && _buttonsPanel.ActualWidth != 0)
+                {
+                    _buttonsPanel.Margin = new System.Windows.Thickness(
+                        _view.ViewportWidth - _buttonsPanel.ActualWidth,
+                        _view.ViewportHeight - _buttonsPanel.ActualHeight,
+                        _view.ViewportWidth,
+                        _view.ViewportHeight);
+                }
+
+                // HUGE files are a really bad experience right now. If it's over ½ mb, skip it.
+                // TODO: Revisit this.
+                if (contentsLength > 500_000)
+                {
+                    throw new Exception("File is too big");
+                }
+
+                // Identify file renderer and select the value locator
+                IValueLocator locator = null;
+                switch (_view.TextSnapshot.ContentType.TypeName.ToUpper())
+                {
+                    case "JSON":
+                        locator = new JsonValueLocator();
+                        break;
+                    case "XML":
+                        locator = new RegExXmlValueLocator();
+                        break;
+                    default:
+                        return;
+                }
+
+                lock(_locatorLock) {
+                    var contents = _view.TextSnapshot.GetText();
+                    if (contents.GetHashCode() != _currentContentsHash)
+                    {
+                        // Locate the config values because the contents has changed
+                        _configValuePositions = locator.FindConfigValues(contents).ToList();
+                    }
+
+                    HideByIndexes(_configValuePositions);
+
+                    // Only update the current hash if we successfully hid the values
+                    _currentContentsHash = contents.GetHashCode();
+                }
             }
             catch
             {
@@ -180,7 +190,7 @@ namespace NoDoxx.Adorners
             }
 
         }
-        
+
         internal void HideByIndexes(List<ConfigPosition> positions)
         {
             Clear();
@@ -202,9 +212,14 @@ namespace NoDoxx.Adorners
 
         private void HideData(int startOffset, int stopOffset, ConfigType type)
         {
-            IWpfTextViewLineCollection textViewLines = _view.TextViewLines;
-            SnapshotSpan span = new SnapshotSpan(_view.TextSnapshot, Span.FromBounds(startOffset, stopOffset));
-            Geometry geometry = textViewLines.GetMarkerGeometry(span);
+            IWpfTextViewLineCollection textViewLines = null;
+            SnapshotSpan span;
+            Geometry geometry = null;
+            textViewLines = _view.TextViewLines;
+            span = new SnapshotSpan(_view.TextSnapshot, Span.FromBounds(startOffset, stopOffset));
+
+            geometry = textViewLines.GetMarkerGeometry(span);
+
             if (geometry != null)
             {
                 var drawing = new GeometryDrawing(_brush, _pen, geometry);
@@ -234,7 +249,6 @@ namespace NoDoxx.Adorners
                 {
                     throw new ArgumentException($"{type} is not supported.");
                 }
-
             }
         }
     }

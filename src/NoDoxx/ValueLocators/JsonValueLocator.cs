@@ -45,7 +45,10 @@ namespace NoDoxx.ValueLocators
             foreach (var jsonObject in jsonDocument.RootElement.EnumerateObject())
             {
                 returnValue.AddRange(GetConfigPosition(jsonObject, fullJsonString, json));
-                jsonStartIndex = returnValue.Max(r => r.EndIndex);
+                if (returnValue.Any())
+                {
+                    jsonStartIndex = returnValue.Max(r => r.EndIndex);
+                }
             }
             return returnValue;
         }
