@@ -123,7 +123,7 @@ namespace NoDoxx.Adorners
             }
             else if (type.ToUpper() == "XML")
             {
-                locator = new XmlValueLocator();
+                locator = new RegExXmlValueLocator();
             }
 
             if (locator == null) return;
