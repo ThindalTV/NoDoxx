@@ -113,12 +113,7 @@ namespace NoDoxx.Adorners
                 return;
             }
 
-            // Adjust button layer
-            if (_view.ViewportRight != 0 && _buttonsPanel.ActualWidth != 0)
-            {
-                _buttonsPanel.Margin = new System.Windows.Thickness(_view.ViewportRight - _buttonsPanel.ActualWidth, 0, 0, 0);
-            }
-
+            // Identify file renderer and select the value locator
             var type = _view.TextSnapshot.ContentType.TypeName;
             IValueLocator locator = null;
 
@@ -132,6 +127,12 @@ namespace NoDoxx.Adorners
             }
 
             if (locator == null) return;
+
+            // Adjust button layer position
+            if (_view.ViewportRight != 0 && _buttonsPanel.ActualWidth != 0)
+            {
+                _buttonsPanel.Margin = new System.Windows.Thickness(_view.ViewportRight - _buttonsPanel.ActualWidth, 0, 0, 0);
+            }
 
             var contents = _view.TextSnapshot.GetText();
 
