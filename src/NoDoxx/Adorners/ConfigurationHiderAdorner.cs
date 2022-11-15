@@ -135,19 +135,22 @@ namespace NoDoxx.Adorners
 
             var contents = _view.TextSnapshot.GetText();
 
-            if (contents.GetHashCode() != _currentContentsHash)
-            {
-                _configValuePositions = locator.FindConfigValues(contents).ToList();
-            }
-
-
             try
             {
+                if (contents.GetHashCode() != _currentContentsHash)
+                {
+                    // Locate the config values
+                    _configValuePositions = locator.FindConfigValues(contents).ToList();
+                }
+                
                 HideByIndexes(_configValuePositions);
+
+                // Only update the current hash if we successfully hid the values
                 _currentContentsHash = contents.GetHashCode();
             }
             catch
             {
+                // Hide everything if we encounter errors while hiding
                 HideByIndexes(new[] { new ConfigPosition(0, contents.Length, ConfigType.Value) }.ToList());
             }
         }
