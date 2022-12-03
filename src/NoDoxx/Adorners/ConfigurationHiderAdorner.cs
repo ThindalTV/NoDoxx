@@ -163,10 +163,11 @@ namespace NoDoxx.Adorners
                     _currentContentsHash = contents.GetHashCode();
                 }
             }
-            catch
+            catch (Exception ex)
             {
                 // Hide everything if we encounter errors while hiding
-                HideByIndexes(new[] { new ConfigPosition(0, contentsLength, ConfigType.Value, "ERROR, cannot parse") }.ToList());
+                System.Diagnostics.Debug.WriteLine(ex.Message);
+                HideByIndexes(new[] { new ConfigPosition(0, contentsLength, ConfigType.Value, ContentsType.Null, "ERROR, cannot parse") }.ToList());
             }
         }
 
@@ -245,7 +246,7 @@ namespace NoDoxx.Adorners
                 {
                     _commentLayer.AddAdornment(AdornmentPositioningBehavior.TextRelative, span, null, image, null);
                 }
-                else
+                else if( type != ConfigType.Name)
                 {
                     throw new ArgumentException($"{type} is not supported.");
                 }

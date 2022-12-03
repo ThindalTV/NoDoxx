@@ -63,6 +63,7 @@ namespace NoDoxx.ValueLocators
                     match.Index + startLength,
                     match.Index + match.Length - endLength,
                     type,
+                    (type == ConfigType.Value ? ContentsType.String : ContentsType.Null),
                     match.Value
                     ));
             }
