@@ -1,7 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <test>
 	<startup>
-		<supportedRuntime version="v4.0" sku=".NETFramework,Version=v4.7.2" />
+		<supportedRuntime
+		version="v4.0" sku=".NETFramework,Version=v4.7.2" />
 		<anotherTest anotherArgument="12" />
 	</startup>
 	<container>

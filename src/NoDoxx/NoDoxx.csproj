@@ -74,6 +74,9 @@
     <Compile Include="Adorners\ConfigurationHiderTextViewCreationListener.cs" />
     <Compile Include="Commands\ToggleDisplayCommand\ToggleDisplayCommand.cs" />
     <Compile Include="Commands\ToggleDisplayCommand\ToggleDisplayCommandPackage.cs" />
+    <Compile Include="Interfaces\ConfigPosition.cs" />
+    <Compile Include="Interfaces\ConfigType.cs" />
+    <Compile Include="Interfaces\ContentsType.cs" />
     <Compile Include="Interfaces\IValueLocator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="source.extension.cs">

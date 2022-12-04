@@ -15,7 +15,8 @@ namespace NoDoxx.ValueLocators
             {
                 _ = JsonSerializer.Deserialize<Dictionary<string, object>>(fileContent, new JsonSerializerOptions()
                 {
-                    ReadCommentHandling = JsonCommentHandling.Skip, AllowTrailingCommas = true
+                    ReadCommentHandling = JsonCommentHandling.Skip,
+                    AllowTrailingCommas = true
                 });
             }
             catch (Exception ex)
@@ -34,22 +35,18 @@ namespace NoDoxx.ValueLocators
             // Find all property names in the json file
             var names = LocateNames(fileContent).Distinct().ToList();
 
-            var hitsWithNames = new List<ConfigPosition>();
-            hitsWithNames.AddRange(hits);
-            hitsWithNames.AddRange(names);
+
 
             // Find all the comments in the JSON file
             var comments = LocateComments(fileContent).Distinct().ToList();
+
             // Remove comments if the start marker is INSIDE of a value or name field
+            var hitsWithNames = new List<ConfigPosition>();
+            hitsWithNames.AddRange(hits);
+            hitsWithNames.AddRange(names);
             RemoveIfStartsInside(comments, hitsWithNames);
 
-            
-            // Remove partial hits from "outside" hits
-
-            //RemoveIfIsInside(hits, names);
-            //RemoveIfStartsInside(hits, comments);
-
-
+            // Add the comments to the hits
             hits.AddRange(comments);
             return hits;
         }
@@ -175,30 +172,26 @@ namespace NoDoxx.ValueLocators
                     return returnValue;
                 }
 
-                try
+                // Get value part of property
+                int jsonStartIndex = GetPropertTextAndIndex(jsonObject, fullJsonString, json, out string propertyText, out int index);
+
+                int propLength;
+                if (jsonObject.Value.ValueKind == JsonValueKind.String)
                 {
-                    // Get value part of property
-                    int jsonStartIndex = GetPropertTextAndIndex(jsonObject, fullJsonString, json, out string propertyText, out int index);
-
-                    int propLength;
-                    if (jsonObject.Value.ValueKind == JsonValueKind.String)
-                    {
-                        propertyText = propertyText.Trim();
-                        index = json.IndexOf("\"", index) + 1;
-                        propLength = propertyText.Length - 2;
-                    }
-                    else
-                    {
-                        propLength = propertyText.Length;
-                    }
-
-                    returnValue.Add(new ConfigPosition(index + jsonStartIndex,
-                                        index + jsonStartIndex + propLength,
-                                        ConfigType.Value,
-                                        jsonObject.Value.ValueKind == JsonValueKind.String ? ContentsType.String : ContentsType.Null,
-                                        jsonObject.Value.ToString()));
+                    propertyText = propertyText.Trim();
+                    index = json.IndexOf("\"", index) + 1;
+                    propLength = propertyText.Length - 2;
                 }
-                catch (Exception) { }
+                else
+                {
+                    propLength = propertyText.Length;
+                }
+
+                returnValue.Add(new ConfigPosition(index + jsonStartIndex,
+                                    index + jsonStartIndex + propLength,
+                                    ConfigType.Value,
+                                    jsonObject.Value.ValueKind == JsonValueKind.String ? ContentsType.String : ContentsType.Null,
+                                    jsonObject.Value.ToString()));
 
                 // Index of the value part of the object
                 jsonIndex = fullJsonString.IndexOf(fullObjectString, jsonIndex + 1);
@@ -243,7 +236,7 @@ namespace NoDoxx.ValueLocators
                     end = contents.Length;
                 }
                 returnValue.Add(new ConfigPosition(start, end + 1, ConfigType.Comment, ContentsType.String, contents.Substring(start, end - start)));
-                position = position+1;
+                position = position + 1;
             }
             return returnValue;
         }
@@ -264,7 +257,7 @@ namespace NoDoxx.ValueLocators
 
                 returnValue.Add(new ConfigPosition(start, end + "*/".Length, ConfigType.Comment, ContentsType.String, contents.Substring(start, end - start)));
 
-                position = position+1;
+                position = position + 1;
             }
 
             return returnValue;

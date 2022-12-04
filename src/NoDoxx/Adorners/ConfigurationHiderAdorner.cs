@@ -7,6 +7,10 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using NoDoxx.Interfaces;
 using NoDoxx.ValueLocators;
+using Microsoft.VisualStudio.PlatformUI;
+using Microsoft.VisualStudio.Shell;
+using System.Windows;
+using System.Windows.Media.Animation;
 
 namespace NoDoxx.Adorners
 {
@@ -57,29 +61,29 @@ namespace NoDoxx.Adorners
         {
             var buttonsPanel = new StackPanel()
             {
-                Orientation = Orientation.Horizontal,
+                Orientation = Orientation.Horizontal
             };
 
             var showConfigValuesButton = new Button()
             {
-                Content = "Display config values",
-                Padding = new System.Windows.Thickness(20),
+                Content = "Display config values & comments",
+                Padding = new Thickness(20),
                 Cursor = System.Windows.Input.Cursors.Hand,
-                Margin = new System.Windows.Thickness(10, 10, 10, 10),
+                Margin = new Thickness(10, 10, 10, 10),
                 Visibility = _configValueLayer.Opacity == 0
-                ? System.Windows.Visibility.Collapsed
-                : System.Windows.Visibility.Visible
+                ? Visibility.Collapsed
+                : Visibility.Visible,
             };
 
             var showCommentsButton = new Button()
             {
                 Content = "Display comments",
                 Cursor = System.Windows.Input.Cursors.Hand,
-                Padding = new System.Windows.Thickness(20),
-                Margin = new System.Windows.Thickness(10, 10, 25, 10),
+                Padding = new Thickness(20),
+                Margin = new Thickness(10, 10, 25, 10),
                 Visibility = _commentLayer.Opacity == 0
-                ? System.Windows.Visibility.Collapsed
-                : System.Windows.Visibility.Visible
+                ? Visibility.Collapsed
+                : Visibility.Visible
             };
 
             buttonsPanel.Children.Add(showConfigValuesButton);
@@ -87,21 +91,21 @@ namespace NoDoxx.Adorners
 
             showConfigValuesButton.Click +=
                 (object sender,
-                System.Windows.RoutedEventArgs e) =>
+                RoutedEventArgs e) =>
                 {
                     _configValueLayer.Opacity = 0; // Flip opacity
                     _commentLayer.Opacity = 0; // Flip opacity
                     _buttonsLayer.Opacity = 0;
-                    showConfigValuesButton.Visibility = System.Windows.Visibility.Collapsed;
-                    showCommentsButton.Visibility = System.Windows.Visibility.Collapsed;
+                    showConfigValuesButton.Visibility = Visibility.Collapsed;
+                    showCommentsButton.Visibility = Visibility.Collapsed;
                 };
 
             showCommentsButton.Click +=
                 (object sender,
-                System.Windows.RoutedEventArgs e) =>
+                RoutedEventArgs e) =>
                 {
                     _commentLayer.Opacity = 0; // Flip opacity
-                    showCommentsButton.Visibility = System.Windows.Visibility.Collapsed;
+                    showCommentsButton.Visibility = Visibility.Collapsed;
                 };
 
             return buttonsPanel;
@@ -121,7 +125,7 @@ namespace NoDoxx.Adorners
                 // Adjust button layer position
                 if (_view.ViewportRight != 0 && _buttonsPanel.ActualWidth != 0)
                 {
-                    _buttonsPanel.Margin = new System.Windows.Thickness(
+                    _buttonsPanel.Margin = new Thickness(
                         _view.ViewportWidth - _buttonsPanel.ActualWidth,
                         _view.ViewportHeight - _buttonsPanel.ActualHeight,
                         _view.ViewportWidth,
@@ -149,7 +153,8 @@ namespace NoDoxx.Adorners
                         return;
                 }
 
-                lock(_locatorLock) {
+                lock (_locatorLock)
+                {
                     var contents = _view.TextSnapshot.GetText();
                     if (contents.GetHashCode() != _currentContentsHash)
                     {
@@ -177,8 +182,6 @@ namespace NoDoxx.Adorners
         /// <param name="positions">A list of positions. Will be returned as clean.</param>
         internal void CleanPositions(List<ConfigPosition> positions)
         {
-            // TODO: Optimization target. Currently doing a bubble
-
             for (int i = 0; i < positions.Count; i++)
             {
                 var outer = positions[i];
@@ -189,7 +192,6 @@ namespace NoDoxx.Adorners
                     i = 0;
                 }
             }
-
         }
 
         internal void HideByIndexes(List<ConfigPosition> positions)
@@ -213,13 +215,9 @@ namespace NoDoxx.Adorners
 
         private void HideData(int startOffset, int stopOffset, ConfigType type)
         {
-            IWpfTextViewLineCollection textViewLines = null;
-            SnapshotSpan span;
-            Geometry geometry = null;
-            textViewLines = _view.TextViewLines;
-            span = new SnapshotSpan(_view.TextSnapshot, Span.FromBounds(startOffset, stopOffset));
-
-            geometry = textViewLines.GetMarkerGeometry(span);
+            IWpfTextViewLineCollection textViewLines = _view.TextViewLines;
+            var span = new SnapshotSpan(_view.TextSnapshot, Span.FromBounds(startOffset, stopOffset));
+            Geometry geometry = textViewLines.GetMarkerGeometry(span);
 
             if (geometry != null)
             {
@@ -246,7 +244,7 @@ namespace NoDoxx.Adorners
                 {
                     _commentLayer.AddAdornment(AdornmentPositioningBehavior.TextRelative, span, null, image, null);
                 }
-                else if( type != ConfigType.Name)
+                else if (type != ConfigType.Name)
                 {
                     throw new ArgumentException($"{type} is not supported.");
                 }
