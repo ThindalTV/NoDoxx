@@ -176,29 +176,9 @@ namespace NoDoxx.Adorners
             }
         }
 
-        /// <summary>
-        /// Makes sure that the start & end indexes of the positions don't overlap and if they do, remove them.
-        /// </summary>
-        /// <param name="positions">A list of positions. Will be returned as clean.</param>
-        internal void CleanPositions(List<ConfigPosition> positions)
-        {
-            for (int i = 0; i < positions.Count; i++)
-            {
-                var outer = positions[i];
-                var inner = positions.Where(p => p.StartIndex >= outer.StartIndex && p.EndIndex < outer.EndIndex).ToList();
-                foreach (var innerField in inner)
-                {
-                    positions.Remove(innerField);
-                    i = 0;
-                }
-            }
-        }
-
         internal void HideByIndexes(List<ConfigPosition> positions)
         {
             Clear();
-
-            CleanPositions(positions);
 
             var pos = positions.Where(p => p.StartIndex != p.EndIndex).GroupBy(p => p.StartIndex).Select(p => p.First()).ToList();
             foreach (var p in pos)
