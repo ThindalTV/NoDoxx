@@ -8,7 +8,8 @@
     "/*": "12",
     "*/": "13*/",
     "//": 123,
-    "array": [1,2, "hello"]
+    "array": [ 1, 2, "hello" ],
+    "url": "http://www.test.com/12"
   }
 }
 // Last
