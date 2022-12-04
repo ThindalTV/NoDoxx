@@ -33,16 +33,11 @@ namespace NoDoxx.Adorners
 
         public ConfigurationHiderAdorner(IWpfTextView view)
         {
-            if (view == null)
-            {
-                throw new ArgumentNullException("view");
-            }
+            _view = view ?? throw new ArgumentNullException(nameof(view));
 
             _configValueLayer = view.GetAdornmentLayer("ConfigurationHiderValuesAdorner");
             _commentLayer = view.GetAdornmentLayer("ConfigurationHiderCommentsAdorner");
             _buttonsLayer = view.GetAdornmentLayer("ConfigurationHiderButtonsAdorner");
-
-            _view = view;
 
             // Create the pen and brush to color the box hiding the config values
             _brush = _view.Background;
@@ -136,7 +131,7 @@ namespace NoDoxx.Adorners
                 // TODO: Revisit this.
                 if (contentsLength > 500_000)
                 {
-                    throw new Exception("File is too big");
+                    throw new InvalidOperationException($"Opened file size exceeds max limit. File size is {contentsLength} bytes.");
                 }
 
                 // Identify file renderer and select the value locator
@@ -226,7 +221,7 @@ namespace NoDoxx.Adorners
                 }
                 else if (type != ConfigType.Name)
                 {
-                    throw new ArgumentException($"{type} is not supported.");
+                    throw new ArgumentException($"{nameof(ConfigType)}.{type} is not supported.");
                 }
             }
         }
