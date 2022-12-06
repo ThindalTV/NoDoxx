@@ -8,9 +8,9 @@ namespace NoDoxx.ValueLocators
 {
     internal class RegExXmlValueLocator : IValueLocator
     {
-        private const string VALUE_REGEX = "\"([^\"]+?)\"";
-        private const string COMMENT_REGEX = "<!--(\\n|.)*-->";
-        private const string BAREWORD_REGEX = ">([\\s\\S])*?<";
+        private const string VALUE_REGEX = @"""([^""]+?)""";
+        private const string COMMENT_REGEX = @"<!--([\s\S])+?-->";
+        private const string BAREWORD_REGEX = @">([\s\S])+?<";
 
         private readonly Regex _valueRegEx;
         private readonly Regex _commentRegEx;
