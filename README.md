@@ -6,3 +6,5 @@ By default it will hide your configuration values behind an overlay, with a butt
 Extension is open to unsolicited pull requests.
 
 And be a dear and report bugs please. Santa clause will love you for it.
+
+You can always find the latest version on the [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=Thindal.NoDoxx), or by searching for the extension NoDoxx or Don't Doxx Yourself in Visual Studio.
