@@ -84,6 +84,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>source.extension.vsixmanifest</DependentUpon>
     </Compile>
+    <Compile Include="ValueLocators\EnvValueLocator.cs" />
     <Compile Include="ValueLocators\RegExXmlValueLocator.cs" />
     <Compile Include="ValueLocators\JsonValueLocator.cs" />
   </ItemGroup>

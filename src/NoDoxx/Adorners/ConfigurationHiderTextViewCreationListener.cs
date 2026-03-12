@@ -7,11 +7,22 @@ namespace NoDoxx.Adorners
     [Export(typeof(IWpfTextViewCreationListener))]
     [ContentType("XML")]
     [ContentType("JSON")]
+    [ContentType("env")]
     [TextViewRole(PredefinedTextViewRoles.Document)]
     internal sealed class ConfigurationHiderTextViewCreationListener : IWpfTextViewCreationListener
     {
         // Disable "Field is never assigned to..." and "Field is never used" compiler's warnings. Justification: the field is used by MEF.
 #pragma warning disable 649, 169
+
+        [Export(typeof(ContentTypeDefinition))]
+        [Name("env")]
+        [BaseDefinition("text")]
+        internal ContentTypeDefinition envContentType;
+
+        [Export(typeof(FileExtensionToContentTypeDefinition))]
+        [FileExtension(".env")]
+        [ContentType("env")]
+        internal FileExtensionToContentTypeDefinition envFileExtension;
 
 
         [Export(typeof(AdornmentLayerDefinition))]

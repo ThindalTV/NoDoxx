@@ -141,6 +141,9 @@ namespace NoDoxx.Adorners
                     case "XML":
                         locator = new RegExXmlValueLocator();
                         break;
+                    case "ENV":
+                        locator = new EnvValueLocator();
+                        break;
                     default:
                         return;
                 }
