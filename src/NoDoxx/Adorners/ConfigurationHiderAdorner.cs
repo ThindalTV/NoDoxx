@@ -23,8 +23,9 @@ namespace NoDoxx.Adorners
 
         private readonly object _locatorLock = new object();
 
-        private int _currentContentsHash;
+        private int _currentVersionNumber = -1;
         private List<ConfigPosition> _configValuePositions;
+        private bool _adornmentsDirty = true;
 
         private bool ValuesAreHidden => _commentLayer.Opacity == 1;
 
@@ -85,6 +86,7 @@ namespace NoDoxx.Adorners
                 (object sender,
                 RoutedEventArgs e) =>
                 {
+                    _adornmentsDirty = true;
                     _configValueLayer.Opacity = 0; // Flip opacity
                     _commentLayer.Opacity = 0; // Flip opacity
                     _buttonsLayer.Opacity = 0;
@@ -96,6 +98,7 @@ namespace NoDoxx.Adorners
                 (object sender,
                 RoutedEventArgs e) =>
                 {
+                    _adornmentsDirty = true;
                     _commentLayer.Opacity = 0; // Flip opacity
                     showCommentsButton.Visibility = Visibility.Collapsed;
                 };
@@ -109,12 +112,7 @@ namespace NoDoxx.Adorners
 
             try
             {
-                if (!ValuesAreHidden && _currentContentsHash != 0)
-                {
-                    return;
-                }
-
-                // Adjust button layer position
+                // Always reposition the button panel, even when values are revealed
                 if (_view.ViewportRight != 0 && _buttonsPanel.ActualWidth != 0)
                 {
                     _buttonsPanel.Margin = new Thickness(
@@ -122,6 +120,11 @@ namespace NoDoxx.Adorners
                         _view.ViewportHeight - _buttonsPanel.ActualHeight,
                         _view.ViewportWidth,
                         _view.ViewportHeight);
+                }
+
+                if (!ValuesAreHidden)
+                {
+                    return;
                 }
 
                 // HUGE files are a really bad experience right now. If it's over ½ mb, skip it.
@@ -151,16 +154,22 @@ namespace NoDoxx.Adorners
                 lock (_locatorLock)
                 {
                     var contents = _view.TextSnapshot.GetText();
-                    if (contents.GetHashCode() != _currentContentsHash)
-                    {
-                        // Locate the config values because the contents has changed
+                    var hash = contents.GetHashCode();
+
+                    if(_currentVersionNumber != _view.TextSnapshot.Version.VersionNumber) {
+                        // Content changed — re-parse and mark adornments as dirty
                         _configValuePositions = locator.FindConfigValues(contents).ToList();
+                        _currentVersionNumber = _view.TextSnapshot.Version.VersionNumber;
+                        _adornmentsDirty = true;
                     }
 
-                    HideByIndexes(_configValuePositions);
-
-                    // Only update the current hash if we successfully hid the values
-                    _currentContentsHash = contents.GetHashCode();
+                    // Only rebuild WPF adornments when content changed or hide was just re-enabled;
+                    // TextRelative adornments survive scrolling automatically
+                    if (_adornmentsDirty)
+                    {
+                        HideByIndexes(_configValuePositions);
+                        _adornmentsDirty = false;
+                    }
                 }
             }
             catch (Exception ex)
