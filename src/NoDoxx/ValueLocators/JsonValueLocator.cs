@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Text.Json;
 
 namespace NoDoxx.ValueLocators
@@ -79,135 +80,103 @@ namespace NoDoxx.ValueLocators
 
         private IEnumerable<ConfigPosition> LocateNames(string fileContent)
         {
-            // Look for : and locate the property name
+            // Look for ':' that are outside of string values to locate property names.
+            // Tracking inString prevents colons embedded in values (e.g. "https://") from
+            // producing false Name regions that would incorrectly filter out nearby comments.
             var ret = new List<ConfigPosition>();
-            var startIndex = 0;
-            while (startIndex < fileContent.Length)
+            bool inString = false;
+
+            for (int i = 0; i < fileContent.Length; i++)
             {
-                var colonIndex = fileContent.IndexOf(':', startIndex);
-                if (colonIndex == -1) break;
-                var quoteIndex = fileContent.LastIndexOf('"', colonIndex);
-                if (quoteIndex == -1) break;
+                char c = fileContent[i];
+
+                if (c == '"' && (i == 0 || fileContent[i - 1] != '\\'))
+                {
+                    inString = !inString;
+                    continue;
+                }
+
+                if (inString || c != ':')
+                    continue;
+
+                // Found a ':' outside a string — look backwards for the enclosing property name.
+                var quoteIndex = fileContent.LastIndexOf('"', i - 1);
+                if (quoteIndex == -1) continue;
                 var nameStartIndex = fileContent.LastIndexOf('"', quoteIndex - 1);
-                if (nameStartIndex == -1) break;
-                var nameStopIndex = fileContent.IndexOf('"', nameStartIndex + 1);
-                if (nameStopIndex == -1) break;
-                var name = fileContent.Substring(nameStartIndex + 1, nameStopIndex - nameStartIndex - 1);
-                ret.Add(new ConfigPosition(nameStartIndex, nameStopIndex + 1, ConfigType.Name, ContentsType.String, name));
-                startIndex = colonIndex + 1;
+                if (nameStartIndex == -1) continue;
+                var name = fileContent.Substring(nameStartIndex + 1, quoteIndex - nameStartIndex - 1);
+                ret.Add(new ConfigPosition(nameStartIndex, quoteIndex + 1, ConfigType.Name, ContentsType.String, name));
             }
+
             return ret;
         }
 
-        private IEnumerable<ConfigPosition> LocalJsonValues(string fullJson, string json = null)
+        private IEnumerable<ConfigPosition> LocalJsonValues(string fullJson)
         {
             var returnValue = new List<ConfigPosition>();
-            if (json == null) json = fullJson;
+            var bytes = Encoding.UTF8.GetBytes(fullJson);
 
-            JsonDocument jsonObject;
-            // Check for valid json
+            var reader = new Utf8JsonReader(bytes, new JsonReaderOptions
+            {
+                CommentHandling = JsonCommentHandling.Skip,
+                AllowTrailingCommas = true
+            });
+
             try
             {
-                jsonObject = JsonDocument.Parse(json, new JsonDocumentOptions() { CommentHandling = JsonCommentHandling.Skip, AllowTrailingCommas = true });
+                while (reader.Read())
+                {
+                    if (reader.TokenType is not (JsonTokenType.String
+                                                or JsonTokenType.Number
+                                                or JsonTokenType.True
+                                                or JsonTokenType.False
+                                                or JsonTokenType.Null))
+                        continue;
+
+                    int startByte = (int)reader.TokenStartIndex;
+
+                    // ValueSpan holds the raw source bytes of the token value:
+                    // for strings, the content between the quotes (escapes unresolved);
+                    // for primitives, the literal text (true/false/null/number).
+                    // Using ValueSpan for lengths gives correct source positions even
+                    // when escape sequences are present (unlike GetString()).
+                    var rawValueBytes = reader.ValueSpan.ToArray();
+
+                    int charStart = Encoding.UTF8.GetCharCount(bytes, 0, startByte);
+                    int rawValueCharLen = Encoding.UTF8.GetCharCount(rawValueBytes);
+
+                    int contentStart, contentEnd;
+                    string contents;
+
+                    if (reader.TokenType == JsonTokenType.String)
+                    {
+                        contentStart = charStart + 1; // skip opening "
+                        contentEnd   = contentStart + rawValueCharLen;
+                        contents     = reader.GetString();
+                    }
+                    else
+                    {
+                        contentStart = charStart;
+                        contentEnd   = charStart + rawValueCharLen;
+                        contents     = Encoding.UTF8.GetString(rawValueBytes);
+                    }
+
+                    returnValue.Add(new ConfigPosition(
+                        contentStart, contentEnd,
+                        ConfigType.Value,
+                        reader.TokenType == JsonTokenType.String ? ContentsType.String : ContentsType.Null,
+                        contents));
+                }
             }
-            catch (Exception)
+            catch (JsonException ex)
             {
-                var start = fullJson.IndexOf(json);
-                var end = start + json.Length;
-                returnValue.Add(new ConfigPosition(start, end, ConfigType.Value, ContentsType.Null, "ERROR, cannot parse"));
-                return returnValue;
+                return new List<ConfigPosition>
+                {
+                    new ConfigPosition(0, fullJson.Length, ConfigType.Value, ContentsType.Null, ex.ToString())
+                };
             }
 
-            returnValue.AddRange(DetermineConfigPositions(fullJson, jsonObject, json));
             return returnValue;
-        }
-
-        private IEnumerable<ConfigPosition> DetermineConfigPositions(string fullJsonString, JsonDocument jsonDocument, string json = null)
-        {
-            var returnValue = new List<ConfigPosition>();
-            foreach (var jsonObject in jsonDocument.RootElement.EnumerateObject())
-            {
-                returnValue.AddRange(GetConfigPosition(jsonObject, fullJsonString, json));
-            }
-            return returnValue;
-        }
-
-        private IEnumerable<ConfigPosition> GetConfigPosition(JsonProperty jsonObject, string fullJsonString, string json = null)
-        {
-            var returnValue = new List<ConfigPosition>();
-            var fullObjectString = jsonObject.ToString();
-            var objString = jsonObject.Value.ToString();
-            int jsonIndex = fullJsonString.IndexOf(fullObjectString);
-
-            while (jsonIndex != -1)
-            {
-                if (jsonObject.Value.ValueKind == JsonValueKind.Object)
-                {
-                    var locatedConfigPositions = new List<ConfigPosition>();
-
-                    // Locate json values inside of the object
-                    locatedConfigPositions.AddRange(LocalJsonValues(fullJsonString, objString));
-
-                    return locatedConfigPositions;
-                }
-
-                if (jsonObject.Value.ValueKind == JsonValueKind.Array)
-                {
-                    foreach (var arrayItem in jsonObject.Value.EnumerateArray())
-                        if (arrayItem.ValueKind == JsonValueKind.Object)
-                        {
-                            returnValue.AddRange(LocalJsonValues(fullJsonString, arrayItem.ToString()));
-                        }
-                        else
-                        {
-                            var itemString = arrayItem.ToString();
-                            int itemIndex = fullJsonString.IndexOf(itemString);
-                            while (itemIndex != -1)
-                            {
-                                returnValue.Add(new ConfigPosition(itemIndex, itemIndex + itemString.Length, ConfigType.Value, ContentsType.String, itemString));
-                                itemIndex = fullJsonString.IndexOf(itemString, itemIndex + 1);
-                            }
-                        }
-
-                    return returnValue;
-                }
-
-                // Get value part of property
-                int jsonStartIndex = GetPropertTextAndIndex(jsonObject, fullJsonString, json, out string propertyText, out int index);
-
-                int propLength;
-                if (jsonObject.Value.ValueKind == JsonValueKind.String)
-                {
-                    propertyText = propertyText.Trim();
-                    index = json.IndexOf("\"", index) + 1;
-                    propLength = propertyText.Length - 2;
-                }
-                else
-                {
-                    propLength = propertyText.Length;
-                }
-
-                returnValue.Add(new ConfigPosition(index + jsonStartIndex,
-                                    index + jsonStartIndex + propLength,
-                                    ConfigType.Value,
-                                    jsonObject.Value.ValueKind == JsonValueKind.String ? ContentsType.String : ContentsType.Null,
-                                    jsonObject.Value.ToString()));
-
-                // Index of the value part of the object
-                jsonIndex = fullJsonString.IndexOf(fullObjectString, jsonIndex + 1);
-            }
-            return returnValue;
-        }
-
-        private static int GetPropertTextAndIndex(JsonProperty jsonObject, string fullJsonString, string json, out string propertyText, out int index)
-        {
-            var jsonString = jsonObject.ToString();
-            int jsonStartIndex = Math.Max(fullJsonString.IndexOf(json, 0), 0);
-            index = json.IndexOf(jsonString);
-            var afterColonOffset = jsonString.IndexOf(':') + 1;
-            propertyText = jsonString.Substring(afterColonOffset);
-            index += afterColonOffset;
-            return jsonStartIndex;
         }
 
         internal IEnumerable<ConfigPosition> LocateComments(string contents)
@@ -235,7 +204,11 @@ namespace NoDoxx.ValueLocators
                 {
                     end = contents.Length;
                 }
-                returnValue.Add(new ConfigPosition(start, end + 1, ConfigType.Comment, ContentsType.String, contents.Substring(start, end - start)));
+                else
+                {
+                    end = end + 1; // include the '\n' in both the range and the stored content
+                }
+                returnValue.Add(new ConfigPosition(start, end, ConfigType.Comment, ContentsType.String, contents.Substring(start, end - start)));
                 position = position + 1;
             }
             return returnValue;
@@ -250,12 +223,19 @@ namespace NoDoxx.ValueLocators
             {
                 var start = position;
                 var end = contents.IndexOf("*/", position + "/*".Length);
+                int endIndex;
                 if (end == -1)
                 {
-                    end = contents.Length;
+                    // Unclosed comment — span to the end of the file
+                    endIndex = contents.Length;
+                }
+                else
+                {
+                    // Include the closing '*/' in both the range and the stored content
+                    endIndex = end + "*/".Length;
                 }
 
-                returnValue.Add(new ConfigPosition(start, end + "*/".Length, ConfigType.Comment, ContentsType.String, contents.Substring(start, end - start)));
+                returnValue.Add(new ConfigPosition(start, endIndex, ConfigType.Comment, ContentsType.String, contents.Substring(start, endIndex - start)));
 
                 position = position + 1;
             }
