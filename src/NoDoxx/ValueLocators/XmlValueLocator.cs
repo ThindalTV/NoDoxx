@@ -6,7 +6,7 @@ using NoDoxx.Interfaces;
 
 namespace NoDoxx.ValueLocators
 {
-    internal class RegExXmlValueLocator : IValueLocator
+    internal class XmlValueLocator : IValueLocator
     {
         public IEnumerable<ConfigPosition> FindConfigValues(string fileContent)
         {

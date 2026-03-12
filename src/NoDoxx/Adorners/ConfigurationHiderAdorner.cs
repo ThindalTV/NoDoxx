@@ -142,7 +142,7 @@ namespace NoDoxx.Adorners
                         locator = new JsonValueLocator();
                         break;
                     case "XML":
-                        locator = new RegExXmlValueLocator();
+                        locator = new XmlValueLocator();
                         break;
                     case "ENV":
                         locator = new EnvValueLocator();

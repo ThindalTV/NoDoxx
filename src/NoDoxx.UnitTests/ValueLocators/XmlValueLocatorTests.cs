@@ -4,13 +4,13 @@ using NoDoxx.ValueLocators;
 namespace NoDoxx.UnitTests.ValueLocators
 {
     [TestClass]
-    public class RegExXmlValueLocatorTests
+    public class XmlValueLocatorTests
     {
         [TestMethod]
         public void Constructor_InitializesSuccessfully()
         {
             // Act
-            var locator = new RegExXmlValueLocator();
+            var locator = new XmlValueLocator();
 
             // Assert
             Assert.IsNotNull(locator);
@@ -20,7 +20,7 @@ namespace NoDoxx.UnitTests.ValueLocators
         public void FindConfigValues_ValidXmlWithQuotedValues_ReturnsConfigPositions()
         {
             // Arrange
-            var locator = new RegExXmlValueLocator();
+            var locator = new XmlValueLocator();
             var xml = "<config><setting name=\"value1\">content</setting></config>";
 
             // Act
@@ -38,7 +38,7 @@ namespace NoDoxx.UnitTests.ValueLocators
         public void FindConfigValues_ValidXmlWithComments_ReturnsCommentConfigPositions()
         {
             // Arrange
-            var locator = new RegExXmlValueLocator();
+            var locator = new XmlValueLocator();
             var xml = "<config><!-- This is a comment --><setting>value</setting></config>";
 
             // Act
@@ -55,7 +55,7 @@ namespace NoDoxx.UnitTests.ValueLocators
         public void FindConfigValues_ValidXmlWithBareWords_ReturnsBareWordConfigPositions()
         {
             // Arrange
-            var locator = new RegExXmlValueLocator();
+            var locator = new XmlValueLocator();
             var xml = "<config><item>BareWordContent</item></config>";
 
             // Act
@@ -72,7 +72,7 @@ namespace NoDoxx.UnitTests.ValueLocators
         public void FindConfigValues_EmptyXml_ReturnsEmptyList()
         {
             // Arrange
-            var locator = new RegExXmlValueLocator();
+            var locator = new XmlValueLocator();
             var xml = "<root></root>";
 
             // Act
@@ -87,7 +87,7 @@ namespace NoDoxx.UnitTests.ValueLocators
         public void FindConfigValues_InvalidXml_HidesEntireContent()
         {
             // Arrange
-            var locator = new RegExXmlValueLocator();
+            var locator = new XmlValueLocator();
             var invalidXml = "<config><unclosed>";
 
             // Act
@@ -104,7 +104,7 @@ namespace NoDoxx.UnitTests.ValueLocators
         public void FindConfigValues_MalformedXml_HidesEntireContent()
         {
             // Arrange
-            var locator = new RegExXmlValueLocator();
+            var locator = new XmlValueLocator();
             var malformedXml = "not xml at all";
 
             // Act
@@ -121,7 +121,7 @@ namespace NoDoxx.UnitTests.ValueLocators
         public void FindConfigValues_NullInput_ThrowsArgumentNullException()
         {
             // Arrange
-            var locator = new RegExXmlValueLocator();
+            var locator = new XmlValueLocator();
 
             // Act & Assert
             try
@@ -139,7 +139,7 @@ namespace NoDoxx.UnitTests.ValueLocators
         public void FindConfigValues_XmlWithMultipleQuotedValues_ReturnsAllMatches()
         {
             // Arrange
-            var locator = new RegExXmlValueLocator();
+            var locator = new XmlValueLocator();
             var xml = "<config><setting name=\"value1\" attr=\"value2\"><item key=\"value3\">text</item></setting></config>";
 
             // Act
@@ -156,7 +156,7 @@ namespace NoDoxx.UnitTests.ValueLocators
         public void FindConfigValues_XmlWithMultipleComments_ReturnsAllComments()
         {
             // Arrange
-            var locator = new RegExXmlValueLocator();
+            var locator = new XmlValueLocator();
             var xml = "<config><!-- Comment 1 --><setting>value</setting><!-- Comment 2 --></config>";
 
             // Act
@@ -174,7 +174,7 @@ namespace NoDoxx.UnitTests.ValueLocators
         public void FindConfigValues_XmlWithMultilineBareWords_ReturnsConfigPositions()
         {
             // Arrange
-            var locator = new RegExXmlValueLocator();
+            var locator = new XmlValueLocator();
             var xml = "<config><description>Line1\nLine2\nLine3</description></config>";
 
             // Act
@@ -189,7 +189,7 @@ namespace NoDoxx.UnitTests.ValueLocators
         public void FindConfigValues_XmlWithMultilineComment_ReturnsCommentConfigPosition()
         {
             // Arrange
-            var locator = new RegExXmlValueLocator();
+            var locator = new XmlValueLocator();
             var xml = "<config><!-- Comment\nspanning\nmultiple lines --><setting>value</setting></config>";
 
             // Act
@@ -207,7 +207,7 @@ namespace NoDoxx.UnitTests.ValueLocators
         public void FindConfigValues_ComplexXmlDocument_ReturnsMixedConfigTypes()
         {
             // Arrange
-            var locator = new RegExXmlValueLocator();
+            var locator = new XmlValueLocator();
             var xml = @"<root>
                 <!-- Configuration file -->
                 <appSettings>
@@ -232,7 +232,7 @@ namespace NoDoxx.UnitTests.ValueLocators
         public void FindConfigValues_XmlWithEmptyTags_HandlesCorrectly()
         {
             // Arrange
-            var locator = new RegExXmlValueLocator();
+            var locator = new XmlValueLocator();
             var xml = "<config><empty></empty><nonempty>data</nonempty></config>";
 
             // Act
@@ -247,7 +247,7 @@ namespace NoDoxx.UnitTests.ValueLocators
         public void FindConfigValues_XmlWithSpecialCharactersInValues_ReturnsConfigPositions()
         {
             // Arrange
-            var locator = new RegExXmlValueLocator();
+            var locator = new XmlValueLocator();
             var xml = "<config><setting name=\"value with spaces\" attr=\"value@with#special$chars\">content</setting></config>";
 
             // Act
@@ -262,7 +262,7 @@ namespace NoDoxx.UnitTests.ValueLocators
         public void FindConfigValues_XmlWithNestedElements_ReturnsAllConfigPositions()
         {
             // Arrange
-            var locator = new RegExXmlValueLocator();
+            var locator = new XmlValueLocator();
             var xml = "<root><parent><child attr=\"value1\"><grandchild>text</grandchild></child></parent></root>";
 
             // Act
@@ -277,7 +277,7 @@ namespace NoDoxx.UnitTests.ValueLocators
         public void FindConfigValues_EmptyString_HidesEntireContent()
         {
             // Arrange
-            var locator = new RegExXmlValueLocator();
+            var locator = new XmlValueLocator();
 
             // Act
             var result = locator.FindConfigValues(string.Empty).ToList();
