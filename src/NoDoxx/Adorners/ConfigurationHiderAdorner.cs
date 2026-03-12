@@ -13,6 +13,10 @@ namespace NoDoxx.Adorners
 {
     internal sealed class ConfigurationHiderAdorner
     {
+        internal const string ValuesLayerName = "ConfigurationHiderValuesAdorner";
+        internal const string CommentsLayerName = "ConfigurationHiderCommentsAdorner";
+        internal const string ButtonsLayerName = "ConfigurationHiderButtonsAdorner";
+
         private readonly IAdornmentLayer _buttonsLayer;
         private readonly IAdornmentLayer _configValueLayer;
         private readonly IAdornmentLayer _commentLayer;
@@ -20,6 +24,8 @@ namespace NoDoxx.Adorners
         private readonly Brush _brush;
         private readonly Pen _pen;
         private readonly StackPanel _buttonsPanel;
+        private Button _showConfigValuesButton;
+        private Button _showCommentsButton;
 
         private readonly object _locatorLock = new object();
 
@@ -33,9 +39,9 @@ namespace NoDoxx.Adorners
         {
             _view = view ?? throw new ArgumentNullException(nameof(view));
 
-            _configValueLayer = view.GetAdornmentLayer("ConfigurationHiderValuesAdorner");
-            _commentLayer = view.GetAdornmentLayer("ConfigurationHiderCommentsAdorner");
-            _buttonsLayer = view.GetAdornmentLayer("ConfigurationHiderButtonsAdorner");
+            _configValueLayer = view.GetAdornmentLayer(ValuesLayerName);
+            _commentLayer = view.GetAdornmentLayer(CommentsLayerName);
+            _buttonsLayer = view.GetAdornmentLayer(ButtonsLayerName);
 
             // Create the pen and brush to color the box hiding the config values
             _brush = _view.Background;
@@ -57,7 +63,7 @@ namespace NoDoxx.Adorners
                 Orientation = Orientation.Horizontal
             };
 
-            var showConfigValuesButton = new Button()
+            _showConfigValuesButton = new Button()
             {
                 Content = "Display config values & comments",
                 Padding = new Thickness(20),
@@ -68,7 +74,7 @@ namespace NoDoxx.Adorners
                 : Visibility.Visible,
             };
 
-            var showCommentsButton = new Button()
+            _showCommentsButton = new Button()
             {
                 Content = "Display comments",
                 Cursor = System.Windows.Input.Cursors.Hand,
@@ -79,10 +85,10 @@ namespace NoDoxx.Adorners
                 : Visibility.Visible
             };
 
-            buttonsPanel.Children.Add(showConfigValuesButton);
-            buttonsPanel.Children.Add(showCommentsButton);
+            buttonsPanel.Children.Add(_showConfigValuesButton);
+            buttonsPanel.Children.Add(_showCommentsButton);
 
-            showConfigValuesButton.Click +=
+            _showConfigValuesButton.Click +=
                 (object sender,
                 RoutedEventArgs e) =>
                 {
@@ -90,17 +96,17 @@ namespace NoDoxx.Adorners
                     _configValueLayer.Opacity = 0; // Flip opacity
                     _commentLayer.Opacity = 0; // Flip opacity
                     _buttonsLayer.Opacity = 0;
-                    showConfigValuesButton.Visibility = Visibility.Collapsed;
-                    showCommentsButton.Visibility = Visibility.Collapsed;
+                    _showConfigValuesButton.Visibility = Visibility.Collapsed;
+                    _showCommentsButton.Visibility = Visibility.Collapsed;
                 };
 
-            showCommentsButton.Click +=
+            _showCommentsButton.Click +=
                 (object sender,
                 RoutedEventArgs e) =>
                 {
                     _adornmentsDirty = true;
                     _commentLayer.Opacity = 0; // Flip opacity
-                    showCommentsButton.Visibility = Visibility.Collapsed;
+                    _showCommentsButton.Visibility = Visibility.Collapsed;
                 };
 
             return buttonsPanel;
@@ -126,6 +132,9 @@ namespace NoDoxx.Adorners
                 {
                     return;
                 }
+
+                _showConfigValuesButton.Visibility = Visibility.Visible;
+                _showCommentsButton.Visibility = Visibility.Visible;
 
                 // HUGE files are a really bad experience right now. If it's over ½ mb, skip it.
                 // TODO: Revisit this.

@@ -72,8 +72,6 @@
   <ItemGroup>
     <Compile Include="Adorners\ConfigurationHiderAdorner.cs" />
     <Compile Include="Adorners\ConfigurationHiderTextViewCreationListener.cs" />
-    <Compile Include="Commands\ToggleDisplayCommand\ToggleDisplayCommand.cs" />
-    <Compile Include="Commands\ToggleDisplayCommand\ToggleDisplayCommandPackage.cs" />
     <Compile Include="Interfaces\ConfigPosition.cs" />
     <Compile Include="Interfaces\ConfigType.cs" />
     <Compile Include="Interfaces\ContentsType.cs" />
@@ -89,11 +87,6 @@
     <Compile Include="ValueLocators\JsonValueLocator.cs" />
   </ItemGroup>
   <ItemGroup>
-    <VSCTCompile Include="Commands\ToggleDisplayCommand\ToggleDisplayCommandPackage.vsct">
-      <ResourceName>Menus.ctmenu</ResourceName>
-    </VSCTCompile>
-    <Content Include="Commands\ToggleDisplayCommand\Resources\ToggleDisplayCommand16x16.png" />
-    <Content Include="Commands\ToggleDisplayCommand\Resources\ToggleDisplayCommandPackage.ico" />
     <Content Include="LICENSE">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>
@@ -136,12 +129,6 @@
     <PackageReference Include="System.Xml.XmlDocument">
       <Version>4.3.0</Version>
     </PackageReference>
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Commands\ToggleDisplayCommand\VSPackage.resx">
-      <MergeWithCTO>true</MergeWithCTO>
-      <ManifestResourceName>VSPackage</ManifestResourceName>
-    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(VSToolsPath)\VSSDK\Microsoft.VsSDK.targets" Condition="'$(VSToolsPath)' != ''" />

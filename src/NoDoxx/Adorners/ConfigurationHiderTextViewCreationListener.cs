@@ -26,20 +26,20 @@ namespace NoDoxx.Adorners
 
 
         [Export(typeof(AdornmentLayerDefinition))]
-        [Name("ConfigurationHiderValuesAdorner")]
+        [Name(ConfigurationHiderAdorner.ValuesLayerName)]
         [Order(After = PredefinedAdornmentLayers.Text)]
         [TextViewRole(PredefinedTextViewRoles.Structured)]
         private AdornmentLayerDefinition valuesAdornmentLayer;
 
         [Export(typeof(AdornmentLayerDefinition))]
-        [Name("ConfigurationHiderCommentsAdorner")]
+        [Name(ConfigurationHiderAdorner.CommentsLayerName)]
         [Order(After = PredefinedAdornmentLayers.Text)]
         [TextViewRole(PredefinedTextViewRoles.Structured)]
         private AdornmentLayerDefinition commentsAdornmentLayer;
 
         [Export(typeof(AdornmentLayerDefinition))]
-        [Name("ConfigurationHiderButtonsAdorner")]
-        [Order(After = "ConfigurationHiderCommentsAdorner")]
+        [Name(ConfigurationHiderAdorner.ButtonsLayerName)]
+        [Order(After = ConfigurationHiderAdorner.CommentsLayerName)]
         [TextViewRole(PredefinedTextViewRoles.Structured)]
         private AdornmentLayerDefinition buttonsAdornmentLayer;
 
