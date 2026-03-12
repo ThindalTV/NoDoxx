@@ -1,13 +1,14 @@
-﻿using Microsoft.VisualStudio.Text;
+﻿using Microsoft.VisualStudio.PlatformUI;
+using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using NoDoxx.Interfaces;
 using NoDoxx.ValueLocators;
-using System.Windows;
 
 namespace NoDoxx.Adorners
 {
@@ -31,7 +32,6 @@ namespace NoDoxx.Adorners
 
         private int _currentVersionNumber = -1;
         private List<ConfigPosition> _configValuePositions;
-        private bool _adornmentsDirty = true;
 
         private bool ValuesAreHidden => _commentLayer.Opacity == 1;
 
@@ -54,6 +54,12 @@ namespace NoDoxx.Adorners
             _buttonsPanel = CreateButtonsPanel();
 
             _buttonsLayer.AddAdornment(AdornmentPositioningBehavior.ViewportRelative, null, null, _buttonsPanel, null);
+
+            // For files that are already open when VS launches (session restore), the view is
+            // fully rendered before TextViewCreated is called so LayoutChanged has already fired.
+            // IsVisibleChanged fires when the tab becomes visible, by which point TextViewLines
+            // is populated and adornments can actually be placed.
+            _view.VisualElement.IsVisibleChanged += OnVisibleChanged;
         }
 
         internal StackPanel CreateButtonsPanel()
@@ -66,24 +72,24 @@ namespace NoDoxx.Adorners
             _showConfigValuesButton = new Button()
             {
                 Content = "Display config values & comments",
-                Padding = new Thickness(20),
                 Cursor = System.Windows.Input.Cursors.Hand,
-                Margin = new Thickness(10, 10, 10, 10),
+                Margin = new Thickness(4, 4, 4, 4),
                 Visibility = _configValueLayer.Opacity == 0
                 ? Visibility.Collapsed
                 : Visibility.Visible,
             };
+            ApplyVsStyle(_showConfigValuesButton);
 
             _showCommentsButton = new Button()
             {
                 Content = "Display comments",
                 Cursor = System.Windows.Input.Cursors.Hand,
-                Padding = new Thickness(20),
-                Margin = new Thickness(10, 10, 25, 10),
+                Margin = new Thickness(4, 4, 4, 4),
                 Visibility = _commentLayer.Opacity == 0
                 ? Visibility.Collapsed
                 : Visibility.Visible
             };
+            ApplyVsStyle(_showCommentsButton);
 
             buttonsPanel.Children.Add(_showConfigValuesButton);
             buttonsPanel.Children.Add(_showCommentsButton);
@@ -92,7 +98,6 @@ namespace NoDoxx.Adorners
                 (object sender,
                 RoutedEventArgs e) =>
                 {
-                    _adornmentsDirty = true;
                     _configValueLayer.Opacity = 0; // Flip opacity
                     _commentLayer.Opacity = 0; // Flip opacity
                     _buttonsLayer.Opacity = 0;
@@ -104,7 +109,6 @@ namespace NoDoxx.Adorners
                 (object sender,
                 RoutedEventArgs e) =>
                 {
-                    _adornmentsDirty = true;
                     _commentLayer.Opacity = 0; // Flip opacity
                     _showCommentsButton.Visibility = Visibility.Collapsed;
                 };
@@ -163,21 +167,20 @@ namespace NoDoxx.Adorners
                 lock (_locatorLock)
                 {
                     var contents = _view.TextSnapshot.GetText();
-                    var hash = contents.GetHashCode();
 
-                    if(_currentVersionNumber != _view.TextSnapshot.Version.VersionNumber) {
-                        // Content changed — re-parse and mark adornments as dirty
+                    if (_currentVersionNumber != _view.TextSnapshot.Version.VersionNumber)
+                    {
+                        // Content changed — re-parse
                         _configValuePositions = locator.FindConfigValues(contents).ToList();
                         _currentVersionNumber = _view.TextSnapshot.Version.VersionNumber;
-                        _adornmentsDirty = true;
                     }
 
-                    // Only rebuild WPF adornments when content changed or hide was just re-enabled;
-                    // TextRelative adornments survive scrolling automatically
-                    if (_adornmentsDirty)
+                    // Always re-apply adornments on every layout pass. TextRelative adornments
+                    // are removed from the visual tree when their lines scroll out of the viewport
+                    // and must be re-added whenever those lines become visible again.
+                    if (_configValuePositions != null)
                     {
                         HideByIndexes(_configValuePositions);
-                        _adornmentsDirty = false;
                     }
                 }
             }
@@ -187,6 +190,12 @@ namespace NoDoxx.Adorners
                 System.Diagnostics.Debug.WriteLine(ex.Message);
                 HideByIndexes(new[] { new ConfigPosition(0, contentsLength, ConfigType.Value, ContentsType.Null, "ERROR, cannot parse") }.ToList());
             }
+        }
+
+        private void OnVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            if ((bool)e.NewValue)
+                OnLayoutChanged(this, null);
         }
 
         internal void HideByIndexes(List<ConfigPosition> positions)
@@ -242,6 +251,75 @@ namespace NoDoxx.Adorners
                     throw new ArgumentException($"{nameof(ConfigType)}.{type} is not supported.");
                 }
             }
+        }
+
+        /// <summary>
+        /// Builds a chrome-free button ControlTemplate whose background, border, and padding
+        /// are driven by the Button's own properties via TemplateBinding so that
+        /// SetResourceReference calls on the button propagate into the visual tree.
+        /// </summary>
+        private static ControlTemplate CreateFlatButtonTemplate()
+        {
+            var template = new ControlTemplate(typeof(Button));
+
+            var border = new FrameworkElementFactory(typeof(Border));
+            border.SetValue(Border.BackgroundProperty,
+                new TemplateBindingExtension(Control.BackgroundProperty));
+            border.SetValue(Border.BorderBrushProperty,
+                new TemplateBindingExtension(Control.BorderBrushProperty));
+            border.SetValue(Border.BorderThicknessProperty,
+                new TemplateBindingExtension(Control.BorderThicknessProperty));
+            border.SetValue(Border.SnapsToDevicePixelsProperty, true);
+
+            var contentPresenter = new FrameworkElementFactory(typeof(ContentPresenter));
+            contentPresenter.SetValue(ContentPresenter.HorizontalAlignmentProperty, HorizontalAlignment.Center);
+            contentPresenter.SetValue(ContentPresenter.VerticalAlignmentProperty, VerticalAlignment.Center);
+            contentPresenter.SetValue(ContentPresenter.MarginProperty,
+                new TemplateBindingExtension(Control.PaddingProperty));
+
+            border.AppendChild(contentPresenter);
+            template.VisualTree = border;
+
+            return template;
+        }
+
+        /// <summary>
+        /// Applies a flat, VS-theme-aware style to a button using EnvironmentColors resource keys
+        /// so colours update automatically when the user switches the VS colour theme.
+        /// </summary>
+        private static void ApplyVsStyle(Button button)
+        {
+            button.Template = CreateFlatButtonTemplate();
+            button.SetResourceReference(Control.BackgroundProperty,
+                EnvironmentColors.ToolWindowBackgroundBrushKey);
+            button.SetResourceReference(Control.ForegroundProperty,
+                EnvironmentColors.ToolWindowTextBrushKey);
+            button.SetResourceReference(Control.BorderBrushProperty,
+                EnvironmentColors.ToolWindowBorderBrushKey);
+            button.BorderThickness = new Thickness(1);
+            button.Padding = new Thickness(8, 4, 8, 4);
+            button.FontFamily = new System.Windows.Media.FontFamily("Segoe UI");
+            button.FontSize = 11;
+
+            button.MouseEnter += (s, e) =>
+            {
+                if (s is Button btn && btn.Background is SolidColorBrush bg)
+                {
+                    var c = bg.Color;
+                    var luminance = 0.299 * c.R + 0.587 * c.G + 0.114 * c.B;
+                    const int delta = 25;
+                    var hover = luminance < 128
+                        ? Color.FromArgb(c.A, (byte)Math.Min(c.R + delta, 255), (byte)Math.Min(c.G + delta, 255), (byte)Math.Min(c.B + delta, 255))
+                        : Color.FromArgb(c.A, (byte)Math.Max(c.R - delta, 0),   (byte)Math.Max(c.G - delta, 0),   (byte)Math.Max(c.B - delta, 0));
+                    btn.Background = new SolidColorBrush(hover);
+                }
+            };
+            button.MouseLeave += (s, e) =>
+            {
+                if (s is Button btn)
+                    btn.SetResourceReference(Control.BackgroundProperty,
+                        EnvironmentColors.ToolWindowBackgroundBrushKey);
+            };
         }
     }
 }
