@@ -14,9 +14,9 @@ namespace NoDoxx.ValueLocators
         {
             try
             {
-                _ = JsonSerializer.Deserialize<Dictionary<string, object>>(fileContent, new JsonSerializerOptions()
+                using var _ = JsonDocument.Parse(fileContent, new JsonDocumentOptions
                 {
-                    ReadCommentHandling = JsonCommentHandling.Skip,
+                    CommentHandling = JsonCommentHandling.Skip,
                     AllowTrailingCommas = true
                 });
             }
@@ -198,7 +198,6 @@ namespace NoDoxx.ValueLocators
             int position = 0;
             while ((position = contents.IndexOf("//", position)) != -1)
             {
-                var start = position;
                 var end = contents.IndexOf('\n', position + "//".Length);
                 if (end == -1)
                 {
@@ -208,7 +207,9 @@ namespace NoDoxx.ValueLocators
                 {
                     end = end + 1; // include the '\n' in both the range and the stored content
                 }
-                returnValue.Add(new ConfigPosition(start, end, ConfigType.Comment, ContentsType.String, contents.Substring(start, end - start)));
+                // Start after '//' so the marker remains visible; only the content is hidden.
+                var contentStart = position + "//".Length;
+                returnValue.Add(new ConfigPosition(contentStart, end, ConfigType.Comment, ContentsType.String, contents.Substring(contentStart, end - contentStart)));
                 position = position + 1;
             }
             return returnValue;
@@ -221,7 +222,8 @@ namespace NoDoxx.ValueLocators
             int position = 0;
             while (position < contents.Length && (position = contents.IndexOf("/*", position)) != -1)
             {
-                var start = position;
+                // Start after '/*' so the opening marker remains visible; only the content is hidden.
+                var contentStart = position + "/*".Length;
                 var end = contents.IndexOf("*/", position + "/*".Length);
                 int endIndex;
                 if (end == -1)
@@ -231,11 +233,11 @@ namespace NoDoxx.ValueLocators
                 }
                 else
                 {
-                    // Include the closing '*/' in both the range and the stored content
-                    endIndex = end + "*/".Length;
+                    // Stop before '*/' so the closing marker remains visible
+                    endIndex = end;
                 }
 
-                returnValue.Add(new ConfigPosition(start, endIndex, ConfigType.Comment, ContentsType.String, contents.Substring(start, endIndex - start)));
+                returnValue.Add(new ConfigPosition(contentStart, endIndex, ConfigType.Comment, ContentsType.String, contents.Substring(contentStart, endIndex - contentStart)));
 
                 position = position + 1;
             }

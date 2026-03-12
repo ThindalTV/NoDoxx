@@ -308,6 +308,97 @@ public class JsonValueLocatorTests
         Assert.AreEqual(partialJson.Length, result[0].EndIndex);
     }
 
+    [TestMethod]
+    public void FindConfigValues_RootArray_ReturnsValuePositions()
+    {
+        // Arrange
+        var json = "[\"alpha\",\"beta\",\"gamma\"]";
+
+        // Act
+        var result = _locator.FindConfigValues(json).ToList();
+
+        // Assert
+        var values = result.Where(cp => cp.Type == ConfigType.Value).ToList();
+        Assert.AreEqual(3, values.Count);
+        Assert.IsTrue(values.Any(v => v.Contents == "alpha"));
+        Assert.IsTrue(values.Any(v => v.Contents == "beta"));
+        Assert.IsTrue(values.Any(v => v.Contents == "gamma"));
+    }
+
+    [TestMethod]
+    public void FindConfigValues_RootArrayWithNumbers_ReturnsValuePositions()
+    {
+        // Arrange
+        var json = "[1,2,3]";
+
+        // Act
+        var result = _locator.FindConfigValues(json).ToList();
+
+        // Assert
+        var values = result.Where(cp => cp.Type == ConfigType.Value).ToList();
+        Assert.AreEqual(3, values.Count);
+    }
+
+    [TestMethod]
+    public void FindConfigValues_RootString_ReturnsValuePosition()
+    {
+        // Arrange
+        var json = "\"hello world\"";
+
+        // Act
+        var result = _locator.FindConfigValues(json).ToList();
+
+        // Assert
+        var values = result.Where(cp => cp.Type == ConfigType.Value).ToList();
+        Assert.AreEqual(1, values.Count);
+        Assert.AreEqual("hello world", values[0].Contents);
+    }
+
+    [TestMethod]
+    public void FindConfigValues_RootNumber_ReturnsValuePosition()
+    {
+        // Arrange
+        var json = "42";
+
+        // Act
+        var result = _locator.FindConfigValues(json).ToList();
+
+        // Assert
+        var values = result.Where(cp => cp.Type == ConfigType.Value).ToList();
+        Assert.AreEqual(1, values.Count);
+        Assert.AreEqual("42", values[0].Contents);
+    }
+
+    [TestMethod]
+    public void FindConfigValues_RootBoolean_ReturnsValuePosition()
+    {
+        // Arrange
+        var json = "true";
+
+        // Act
+        var result = _locator.FindConfigValues(json).ToList();
+
+        // Assert
+        var values = result.Where(cp => cp.Type == ConfigType.Value).ToList();
+        Assert.AreEqual(1, values.Count);
+        Assert.AreEqual("true", values[0].Contents);
+    }
+
+    [TestMethod]
+    public void FindConfigValues_RootNull_ReturnsValuePosition()
+    {
+        // Arrange
+        var json = "null";
+
+        // Act
+        var result = _locator.FindConfigValues(json).ToList();
+
+        // Assert
+        var values = result.Where(cp => cp.Type == ConfigType.Value).ToList();
+        Assert.AreEqual(1, values.Count);
+        Assert.AreEqual("null", values[0].Contents);
+    }
+
     #endregion
 
     #region LocateComments Tests
@@ -341,7 +432,7 @@ public class JsonValueLocatorTests
         var resultList = result.ToList();
         Assert.HasCount(1, resultList);
         Assert.AreEqual(ConfigType.Comment, resultList[0].Type);
-        Assert.AreEqual(0, resultList[0].StartIndex);
+        Assert.AreEqual(2, resultList[0].StartIndex);
     }
 
     [TestMethod]
@@ -374,7 +465,7 @@ public class JsonValueLocatorTests
         var resultList = result.ToList();
         Assert.HasCount(1, resultList);
         Assert.AreEqual(ConfigType.Comment, resultList[0].Type);
-        Assert.AreEqual(0, resultList[0].StartIndex);
+        Assert.AreEqual(2, resultList[0].StartIndex);
     }
 
     [TestMethod]
@@ -438,7 +529,7 @@ public class JsonValueLocatorTests
         Assert.IsNotNull(result);
         var resultList = result.ToList();
         Assert.HasCount(1, resultList);
-        Assert.AreEqual(0, resultList[0].StartIndex);
+        Assert.AreEqual(2, resultList[0].StartIndex);
         Assert.AreEqual(ConfigType.Comment, resultList[0].Type);
     }
 
@@ -528,9 +619,9 @@ public class JsonValueLocatorTests
     public void LocateComments_InlineCommentContentsMatchesExtractedRange()
     {
         // Arrange
-        // LocateInlineComments sets EndIndex = position_of_newline + 1 (includes the '\n'),
-        // but stores Contents = Substring(start, position_of_newline - start) (excludes '\n').
-        // So the Contents string is one character shorter than EndIndex - StartIndex.
+        // LocateInlineComments sets StartIndex = position_of_'//' + 2 (skips the marker)
+        // and EndIndex = position_of_newline + 1 (includes the '\n').
+        // Contents is Substring(contentStart, end - contentStart), matching the range exactly.
         var content = "// inline comment\n{}";
 
         // Act
@@ -550,10 +641,9 @@ public class JsonValueLocatorTests
     public void LocateComments_MultiLineCommentContentsMatchesExtractedRange()
     {
         // Arrange
-        // LocateMultiLineComments sets EndIndex = position_of_closing_star + "*/".Length,
-        // but stores Contents = Substring(start, position_of_closing_star - start),
-        // which stops before the "*/". The Contents is therefore two characters shorter
-        // than what EndIndex - StartIndex covers in the source.
+        // LocateMultiLineComments sets StartIndex = position_of_'/*' + 2 (skips the opening marker)
+        // and EndIndex = position_of_'*/' (stops before the closing marker).
+        // Contents is Substring(contentStart, endIndex - contentStart), matching the range exactly.
         var content = "/* multi-line comment */";
 
         // Act
