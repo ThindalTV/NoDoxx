@@ -7,10 +7,7 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using NoDoxx.Interfaces;
 using NoDoxx.ValueLocators;
-using Microsoft.VisualStudio.PlatformUI;
-using Microsoft.VisualStudio.Shell;
 using System.Windows;
-using System.Windows.Media.Animation;
 
 namespace NoDoxx.Adorners
 {

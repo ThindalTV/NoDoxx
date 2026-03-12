@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Xml;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using NoDoxx.Interfaces;
+﻿using NoDoxx.Interfaces;
 using NoDoxx.ValueLocators;
 
 namespace NoDoxx.UnitTests.ValueLocators
@@ -70,7 +65,7 @@ namespace NoDoxx.UnitTests.ValueLocators
             var configList = result.ToList();
             Assert.IsTrue(configList.Count > 0);
             var bareWordItem = configList.First(c => c.Contents.Contains("BareWordContent"));
-            Assert.AreEqual("<item>BareWordContent", xml.Substring(bareWordItem.StartIndex, bareWordItem.EndIndex - bareWordItem.StartIndex));
+            Assert.AreEqual("BareWordContent", xml.Substring(bareWordItem.StartIndex, bareWordItem.EndIndex - bareWordItem.StartIndex));
         }
 
         [TestMethod]
@@ -89,41 +84,37 @@ namespace NoDoxx.UnitTests.ValueLocators
         }
 
         [TestMethod]
-        public void FindConfigValues_InvalidXml_ThrowsXmlException()
+        public void FindConfigValues_InvalidXml_HidesEntireContent()
         {
             // Arrange
             var locator = new RegExXmlValueLocator();
             var invalidXml = "<config><unclosed>";
 
-            // Act & Assert
-            try
-            {
-                locator.FindConfigValues(invalidXml);
-                Assert.Fail("Expected XmlException was not thrown");
-            }
-            catch (XmlException)
-            {
-                // Expected exception
-            }
+            // Act
+            var result = locator.FindConfigValues(invalidXml).ToList();
+
+            // Assert
+            Assert.AreEqual(1, result.Count);
+            Assert.AreEqual(ConfigType.Value, result[0].Type);
+            Assert.AreEqual(0, result[0].StartIndex);
+            Assert.AreEqual(invalidXml.Length, result[0].EndIndex);
         }
 
         [TestMethod]
-        public void FindConfigValues_MalformedXml_ThrowsXmlException()
+        public void FindConfigValues_MalformedXml_HidesEntireContent()
         {
             // Arrange
             var locator = new RegExXmlValueLocator();
             var malformedXml = "not xml at all";
 
-            // Act & Assert
-            try
-            {
-                locator.FindConfigValues(malformedXml);
-                Assert.Fail("Expected XmlException was not thrown");
-            }
-            catch (XmlException)
-            {
-                // Expected exception
-            }
+            // Act
+            var result = locator.FindConfigValues(malformedXml).ToList();
+
+            // Assert
+            Assert.AreEqual(1, result.Count);
+            Assert.AreEqual(ConfigType.Value, result[0].Type);
+            Assert.AreEqual(0, result[0].StartIndex);
+            Assert.AreEqual(malformedXml.Length, result[0].EndIndex);
         }
 
         [TestMethod]
@@ -156,8 +147,9 @@ namespace NoDoxx.UnitTests.ValueLocators
 
             // Assert
             var configList = result.ToList();
-            var quotedValues = configList.Where(c => c.Type == ConfigType.Value && c.Contents.Contains("\"")).ToList();
-            Assert.IsTrue(quotedValues.Count >= 3);
+            // Attribute values are now the decoded text only — no surrounding quote chars in Contents
+            var attributeValues = configList.Where(c => c.Type == ConfigType.Value).ToList();
+            Assert.IsTrue(attributeValues.Count >= 3);
         }
 
         [TestMethod]
@@ -282,21 +274,19 @@ namespace NoDoxx.UnitTests.ValueLocators
         }
 
         [TestMethod]
-        public void FindConfigValues_EmptyString_ThrowsXmlException()
+        public void FindConfigValues_EmptyString_HidesEntireContent()
         {
             // Arrange
             var locator = new RegExXmlValueLocator();
 
-            // Act & Assert
-            try
-            {
-                locator.FindConfigValues(string.Empty);
-                Assert.Fail("Expected XmlException was not thrown");
-            }
-            catch (XmlException)
-            {
-                // Expected exception
-            }
+            // Act
+            var result = locator.FindConfigValues(string.Empty).ToList();
+
+            // Assert
+            Assert.AreEqual(1, result.Count);
+            Assert.AreEqual(ConfigType.Value, result[0].Type);
+            Assert.AreEqual(0, result[0].StartIndex);
+            Assert.AreEqual(0, result[0].EndIndex);
         }
     }
 }

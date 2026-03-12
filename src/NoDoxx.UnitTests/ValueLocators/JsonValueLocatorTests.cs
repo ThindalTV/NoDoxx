@@ -276,6 +276,38 @@ public class JsonValueLocatorTests
             "incorrectly filtered out by the false Name region created for the ':' in 'https://'.");
     }
 
+    [TestMethod]
+    public void FindConfigValues_InvalidJson_HidesEntireContent()
+    {
+        // Arrange
+        var invalidJson = "{invalid json";
+
+        // Act
+        var result = _locator.FindConfigValues(invalidJson).ToList();
+
+        // Assert
+        Assert.AreEqual(1, result.Count);
+        Assert.AreEqual(ConfigType.Value, result[0].Type);
+        Assert.AreEqual(0, result[0].StartIndex);
+        Assert.AreEqual(invalidJson.Length, result[0].EndIndex);
+    }
+
+    [TestMethod]
+    public void FindConfigValues_PartialJson_HidesEntireContent()
+    {
+        // Arrange
+        var partialJson = "{\"key\":";
+
+        // Act
+        var result = _locator.FindConfigValues(partialJson).ToList();
+
+        // Assert
+        Assert.AreEqual(1, result.Count);
+        Assert.AreEqual(ConfigType.Value, result[0].Type);
+        Assert.AreEqual(0, result[0].StartIndex);
+        Assert.AreEqual(partialJson.Length, result[0].EndIndex);
+    }
+
     #endregion
 
     #region LocateComments Tests

@@ -1,10 +1,7 @@
 ﻿using Community.VisualStudio.Toolkit;
 using Microsoft.VisualStudio.Shell;
-using Microsoft.VisualStudio.Shell.Interop;
-using Microsoft.VisualStudio.Threading;
 using System;
 using System.ComponentModel.Design;
-using System.Globalization;
 using Task = System.Threading.Tasks.Task;
 
 namespace NoDoxx.Commands
